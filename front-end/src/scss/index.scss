@@ -1,0 +1,64 @@
+@import './custom';
+@import './conversation';
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    opacity: 0.5;
+
+    .loading {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007aff;
+        animation: spin 1s linear infinite;
+    }
+}
+
+.img-in-search {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+}
+
+.img-in-notify {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+}
+
+.img-in-sidebar {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+}
+
+.img-in-create-post {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.set-upload-img input[type="file"] {
+    display: none;
+}
+
+.ql-editor {
+    font-size: 16px;
+    height: 160px;
+}

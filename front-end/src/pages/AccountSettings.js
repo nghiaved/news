@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import FileBase64 from 'react-file-base64'
 import { jwtDecode } from 'jwt-decode'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
-import { path, alertMessage } from '../utils'
+import { toast } from 'react-toastify'
+import { path } from '../utils'
 import { apiUsersDeleteAccount, apiUsersChangePassword, apiUsersUpdateInfo } from '../services'
 
 export default function AccountSettings() {
@@ -14,23 +15,20 @@ export default function AccountSettings() {
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
     const navigate = useNavigate()
-    const toastUpdateInfoRef = useRef()
-    const toastChangePasswordRef = useRef()
-    const toastDeleteAccountRef = useRef()
 
     const handleUpdateInfo = async (data) => {
         try {
             image ? data.image = image : data.image = userInfo.image
             const res = await apiUsersUpdateInfo({ ...data, id: userInfo.id })
             if (res.status === 200) {
-                alertMessage(toastUpdateInfoRef.current, res.data.message, true)
+                toast.success(res.data.message)
                 window.localStorage.setItem('token', JSON.stringify(res.data.token))
                 setTimeout(function () {
                     navigate(window.location.pathname)
                 }, 3000)
             }
         } catch (e) {
-            alertMessage(toastUpdateInfoRef.current, e.data.message, false)
+            toast.error(e.data.message)
         }
     }
 
@@ -38,10 +36,10 @@ export default function AccountSettings() {
         try {
             const res = await apiUsersChangePassword({ ...data, id: userInfo.id })
             if (res.status === 200) {
-                alertMessage(toastChangePasswordRef.current, res.data.message, true)
+                toast.success(res.data.message)
             }
         } catch (e) {
-            alertMessage(toastChangePasswordRef.current, e.data.message, false)
+            toast.error(e.data.message)
         }
     }
 
@@ -53,7 +51,7 @@ export default function AccountSettings() {
                 navigate(0)
             }
         } catch (e) {
-            alertMessage(toastDeleteAccountRef.current, e.data.message, false)
+            toast.error(e.data.message)
         }
     }
 
@@ -195,7 +193,6 @@ export default function AccountSettings() {
                                             <div className="text-center">
                                                 <button type="submit" className="btn btn-primary">Save Changes</button>
                                             </div>
-                                            <div ref={toastUpdateInfoRef} className='mt-2'></div>
                                         </form>
                                     </div>
                                     <div className="tab-pane fade pt-3" id="profile-change-password">
@@ -224,7 +221,6 @@ export default function AccountSettings() {
                                             <div className="text-center">
                                                 <button type="submit" className="btn btn-primary">Change Password</button>
                                             </div>
-                                            <div ref={toastChangePasswordRef} className='mt-2'></div>
                                         </form>
                                     </div>
                                     <div className="tab-pane fade pt-3" id="profile-delete-account">
@@ -246,7 +242,6 @@ export default function AccountSettings() {
                                             <div className="text-center">
                                                 <button type="submit" className="btn btn-danger">Delete Account</button>
                                             </div>
-                                            <div ref={toastDeleteAccountRef} className='mt-2'></div>
                                         </form>
                                     </div>
                                 </div>

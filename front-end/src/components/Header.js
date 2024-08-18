@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import moment from 'moment'
+import { toast } from 'react-toastify'
 import { useGlobalState } from '../hooks'
 import {
     apiFriendsGetListRequests, apiFriendsAcceptRequest, apiFriendsDeleteFriend,
     apiConversationsGetAllConversations
 } from '../services'
-import { path, socket, alertMessage } from '../utils'
+import { path, socket } from '../utils'
 import SearchUser from './SearchUser'
 
 export default function Header() {
@@ -18,7 +19,6 @@ export default function Header() {
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = token ? jwtDecode(token) : {}
     const navigate = useNavigate()
-    const toastRef = useRef()
 
     const handleToggleSidebar = () => {
         document.querySelector('body').classList.toggle('toggle-sidebar')
@@ -68,7 +68,7 @@ export default function Header() {
             if (res.status === 200) {
                 dispatch({ fetchAgain: !state.fetchAgain })
                 socket.emit('request-friend', friendUsername)
-                alertMessage(toastRef.current, res.data.message, true)
+                toast.success(res.data.message)
             }
         } catch (error) {
             console.log(error)
@@ -82,7 +82,7 @@ export default function Header() {
             if (res.status === 200) {
                 dispatch({ fetchAgain: !state.fetchAgain })
                 socket.emit('request-friend', friendUsername)
-                alertMessage(toastRef.current, res.data.message, true)
+                toast.success(res.data.message)
             }
         } catch (error) {
             console.log(error)
@@ -116,7 +116,6 @@ export default function Header() {
                                 You have {listFriends.length} new notifications
                                 <Link to="/"><span className="badge rounded-pill bg-primary p-2 ms-2">View all</span></Link>
                             </li>
-                            <li className='mx-2 h6' ref={toastRef}></li>
                             {listFriends.map((item, index) => {
                                 return <div key={index}>
                                     <li>

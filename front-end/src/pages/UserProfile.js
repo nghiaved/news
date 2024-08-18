@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useGlobalState } from '../hooks'
 import { apiUsersGetInfo, apiFriendsGetFriend, apiFriendsSendRequest, apiFriendsAcceptRequest, apiFriendsDeleteFriend } from '../services'
 import { path, socket } from '../utils'
@@ -55,14 +56,17 @@ export default function UserProfile() {
 
     const handleSendRequest = () => {
         handleRequestFriend(apiFriendsSendRequest, { username: userInfo.username, friendUsername: username })
+        toast.success('Friend request sent')
     }
 
     const handleAcceptRequest = () => {
         handleRequestFriend(apiFriendsAcceptRequest, infoFriend.id)
+        toast.success('Friend request accepted')
     }
 
     const handleDeleteFriend = () => {
         handleRequestFriend(apiFriendsDeleteFriend, infoFriend.id)
+        toast.success('Friend request deleted')
     }
 
     const renderStatus = () => {

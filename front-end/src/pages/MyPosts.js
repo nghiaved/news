@@ -4,8 +4,9 @@ import moment from 'moment'
 import { jwtDecode } from 'jwt-decode'
 import { Link } from 'react-router-dom'
 import { apiPostsGetAllMyPosts, apiPostsCreatePost, apiPostsUpdatePost, apiPostsDeleteFriend } from '../services'
-import { path, alertMessage } from '../utils'
+import { path } from '../utils'
 import Pagination from '../components/Pagination'
+import { toast } from 'react-toastify'
 
 export default function MyPosts() {
     const [myPosts, setMyPosts] = useState([])
@@ -18,7 +19,6 @@ export default function MyPosts() {
     const [edit, setEdit] = useState({})
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
-    const postRef = useRef()
     const statusCreateRef = useRef()
     const statusUpdateRef = useRef()
 
@@ -42,7 +42,7 @@ export default function MyPosts() {
         if (!checkEmpty
             .replaceAll("<p>", "").replaceAll("</p>", "")
             .replaceAll("<br>", "").replaceAll("<br/>", "").trim())
-            return alertMessage(postRef.current, 'Please fill in status', false)
+            return toast.error('Please fill in status')
         try {
             const data = new FormData()
             data.append('author', userInfo.username)
@@ -50,7 +50,7 @@ export default function MyPosts() {
             if (imageCreate) data.append('image', imageCreate)
             const res = await apiPostsCreatePost(data)
             if (res.status === 200) {
-                alertMessage(postRef.current, res.data.message, true)
+                toast.success(res.data.message)
                 fetchAllMyPosts()
                 setImageCreate()
                 setStatusCreate()
@@ -65,7 +65,7 @@ export default function MyPosts() {
         if (!checkEmpty
             .replaceAll("<p>", "").replaceAll("</p>", "")
             .replaceAll("<br>", "").replaceAll("<br/>", "").trim())
-            return alertMessage(postRef.current, 'Please fill in status', false)
+            return toast.error('Please fill in status')
         try {
             const data = new FormData()
             data.append('id', item.id)
@@ -74,7 +74,7 @@ export default function MyPosts() {
             if (imageUpdate) data.append('image', imageUpdate)
             const res = await apiPostsUpdatePost(data)
             if (res.status === 200) {
-                alertMessage(postRef.current, res.data.message, true)
+                toast.success(res.data.message)
                 fetchAllMyPosts()
                 setImageUpdate()
                 setStatusUpdate()
@@ -88,7 +88,7 @@ export default function MyPosts() {
         try {
             const res = await apiPostsDeleteFriend(id)
             if (res.status === 200) {
-                alertMessage(postRef.current, res.data.message, true)
+                toast.success(res.data.message)
                 fetchAllMyPosts()
             }
         } catch (error) {
@@ -109,8 +109,7 @@ export default function MyPosts() {
                 </nav>
             </div>
             <section className="section">
-                <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createModal">Create Post</button>
-                <div className='my-3' ref={postRef}></div>
+                <button className="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Create Post</button>
                 <div className="modal fade" id="createModal" tabIndex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">

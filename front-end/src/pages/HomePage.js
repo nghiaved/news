@@ -3,11 +3,13 @@ import ReactQuill from 'react-quill'
 import moment from 'moment'
 import { apiPostsGetAllPosts } from '../services'
 import Pagination from '../components/Pagination'
+import ModalComment from '../components/Comment'
 
 export default function HomePage() {
     const [posts, setPosts] = useState([])
     const [pageNumber, setPageNumber] = useState(1)
     const [numberOfPages, setNumberOfPages] = useState([])
+    const [postId, setPostId] = useState(0)
 
     const fetchAllPosts = useCallback(async () => {
         try {
@@ -23,6 +25,7 @@ export default function HomePage() {
     useEffect(() => {
         fetchAllPosts()
     }, [fetchAllPosts])
+
     return (
         <main id='main' className='main'>
             <div className='row'>
@@ -39,6 +42,12 @@ export default function HomePage() {
                                     {item.image && <img style={{ height: '100%', objectFit: 'cover' }} src={item.image} className="card-img border" alt="..." />}
                                 </div>
                             </div>
+                            <div className='m-4 text-end'>
+                                <button onClick={() => setPostId(item.id)} className='btn btn-sm btn-outline-success'
+                                    data-bs-toggle="modal" data-bs-target="#commentModal">
+                                    Comment {item.totalComment > 0 && `(${item.totalComment})`}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 })}
@@ -47,6 +56,7 @@ export default function HomePage() {
                     pageNumber={pageNumber}
                     setPageNumber={setPageNumber}
                 />
+                <ModalComment postId={postId} />
             </div>
         </main>
     )

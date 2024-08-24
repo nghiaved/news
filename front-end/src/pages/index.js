@@ -5,13 +5,15 @@ import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import BackToTop from '../components/BackToTop'
 import Conversation from '../components/Conversation'
+import Loading from '../components/Loading'
 import { socket } from '../utils'
-import { useGlobalState } from '../hooks'
+import { useGlobalState, useLoading } from '../hooks'
 
 export default function Home() {
     const [state, dispatch] = useGlobalState()
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
+    const { isLoading } = useLoading()
 
     useEffect(() => {
         socket.emit('join-username', userInfo.username)
@@ -29,6 +31,7 @@ export default function Home() {
             <Conversation />
             <Outlet />
             <BackToTop />
+            {isLoading && <Loading />}
         </React.Fragment>
     )
 }

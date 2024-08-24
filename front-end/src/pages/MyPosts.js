@@ -109,7 +109,7 @@ export default function MyPosts() {
                 </nav>
             </div>
             <section className="section">
-                <button className="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Create Post</button>
+                <button className="btn btn-sm btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Create Post</button>
                 <div className="modal fade" id="createModal" tabIndex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
@@ -138,8 +138,8 @@ export default function MyPosts() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button onClick={handleCreatePost} data-bs-dismiss="modal" type="submit" className="btn btn-primary">Create</button>
+                                <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button onClick={handleCreatePost} data-bs-dismiss="modal" type="submit" className="btn btn-sm btn-primary">Create</button>
                             </div>
                         </div>
                     </div>
@@ -162,8 +162,8 @@ export default function MyPosts() {
                                     <button onClick={() => {
                                         setEdit(item)
                                         setStatusUpdate(item.status)
-                                    }} className='btn btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
-                                    <button className='btn btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
+                                    }} className='btn btn-sm btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
+                                    <button className='btn btn-sm btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
                                     <div className="modal fade" id={`deleteModal${item.id}`} tabIndex="-1" aria-labelledby={`deleteModal${item.id}Label`} aria-hidden="true">
                                         <div className="modal-dialog modal-dialog-centered">
                                             <div className="modal-content">
@@ -175,8 +175,8 @@ export default function MyPosts() {
                                                     Are you sure you want to delete your post?
                                                 </div>
                                                 <div className="modal-footer">
-                                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-danger">Delete</button>
+                                                    <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -219,8 +219,8 @@ export default function MyPosts() {
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button onClick={() => handleUpdatePost(edit)} data-bs-dismiss="modal" type="submit" className='btn btn-warning'>Save</button>
+                                        <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button onClick={() => handleUpdatePost(edit)} data-bs-dismiss="modal" type="submit" className='btn btn-sm btn-warning'>Save</button>
                                     </div>
                                 </div>
                             </div>

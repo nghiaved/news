@@ -71,16 +71,16 @@ export default function UserProfile() {
 
     const renderStatus = () => {
         if (infoFriend?.status === 1) {
-            return <button type="button" className="btn btn-outline-danger me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">Unfriend</button>
+            return <button type="button" className="btn btn-sm btn-outline-danger me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">Unfriend</button>
         } else if (infoFriend?.status === 0) {
             if (infoFriend?.sender === userInfo.username)
-                return <button type="button" className="btn btn-outline-danger me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">Recall</button>
+                return <button type="button" className="btn btn-sm btn-outline-danger me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">Recall</button>
             else return <React.Fragment>
-                <button onClick={handleAcceptRequest} type="button" className="btn btn-outline-primary me-2">Agree</button>
-                <button onClick={handleDeleteFriend} type="button" className="btn btn-outline-danger me-4">Refuse</button>
+                <button onClick={handleAcceptRequest} type="button" className="btn btn-sm btn-outline-primary me-2">Agree</button>
+                <button onClick={handleDeleteFriend} type="button" className="btn btn-sm btn-outline-danger me-4">Refuse</button>
             </React.Fragment>
         } else {
-            return <button onClick={handleSendRequest} type="button" className="btn btn-outline-primary me-4">Add friend</button>
+            return <button onClick={handleSendRequest} type="button" className="btn btn-sm btn-outline-primary me-4">Add friend</button>
         }
     }
 
@@ -113,7 +113,7 @@ export default function UserProfile() {
                                 {userInfo.username !== username
                                     ? <div className='d-flex justify-content-end pt-4'>
                                         {renderStatus()}
-                                        <button onClick={() => dispatch({ userConversation: user })} type="button" className="btn btn-outline-success">Send message</button>
+                                        <button onClick={() => dispatch({ userConversation: user })} type="button" className="btn btn-sm btn-outline-success">Send message</button>
                                         <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                             <div className="modal-dialog modal-dialog-centered">
                                                 <div className="modal-content">
@@ -125,15 +125,15 @@ export default function UserProfile() {
                                                         Are you sure you want to delete your friendship relationship?
                                                     </div>
                                                     <div className="modal-footer">
-                                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        <button onClick={handleDeleteFriend} data-bs-dismiss="modal" type="button" className="btn btn-danger">Delete</button>
+                                                        <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button onClick={handleDeleteFriend} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     : <div className="d-flex justify-content-end pt-4">
-                                        <Link to={path.ACCOUNT_SETTINGS} className="btn btn-outline-warning">Edit profile</Link>
+                                        <Link to={path.ACCOUNT_SETTINGS} className="btn btn-sm btn-outline-warning">Edit profile</Link>
                                     </div>
                                 }
                                 <div className="tab-content">

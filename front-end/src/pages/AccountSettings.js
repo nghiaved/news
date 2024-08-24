@@ -82,7 +82,7 @@ export default function AccountSettings() {
                         <div className="card">
                             <div className="card-body pt-3">
                                 <div className="d-flex justify-content-end pt-4">
-                                    <Link to={`${path.PROFILE}/${userInfo.username}`} className="btn btn-outline-info">View profile</Link>
+                                    <Link to={`${path.PROFILE}/${userInfo.username}`} className="btn btn-sm btn-outline-info">View profile</Link>
                                 </div>
                                 <ul className="nav nav-tabs nav-tabs-bordered">
                                     <li className="nav-item">
@@ -191,7 +191,7 @@ export default function AccountSettings() {
                                                 </div>
                                             </div>
                                             <div className="text-center">
-                                                <button type="submit" className="btn btn-primary">Save Changes</button>
+                                                <button type="submit" className="btn btn-sm btn-primary">Save Changes</button>
                                             </div>
                                         </form>
                                     </div>
@@ -219,7 +219,7 @@ export default function AccountSettings() {
                                                 </div>
                                             </div>
                                             <div className="text-center">
-                                                <button type="submit" className="btn btn-primary">Change Password</button>
+                                                <button type="submit" className="btn btn-sm btn-primary">Change Password</button>
                                             </div>
                                         </form>
                                     </div>
@@ -240,7 +240,7 @@ export default function AccountSettings() {
                                                 </div>
                                             </div>
                                             <div className="text-center">
-                                                <button type="submit" className="btn btn-danger">Delete Account</button>
+                                                <button type="submit" className="btn btn-sm btn-danger">Delete Account</button>
                                             </div>
                                         </form>
                                     </div>

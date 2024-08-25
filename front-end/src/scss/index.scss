@@ -73,3 +73,27 @@
         height: 100%;
     }
 }
+
+.post-container {
+    display: flex;
+    height: 30vh;
+
+    .post-image {
+        height: 100%;
+
+        img {
+            margin: 20px 4px;
+            height: 100%;
+            width: auto;
+        }
+    }
+
+    .post-content {
+        flex: 1;
+        margin: 6px 0;
+
+        .ql-editor {
+            height: 30vh;
+        }
+    }
+}

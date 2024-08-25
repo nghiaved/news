@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage'
 import AccountSettings from './pages/AccountSettings'
 import UserProfile from './pages/UserProfile'
 import MyPosts from './pages/MyPosts'
+import SavedPosts from './pages/SavedPosts'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -21,6 +22,7 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path={path.ACCOUNT_SETTINGS} element={<AccountSettings />} />
                 <Route path={path.MY_POSTS} element={<MyPosts />} />
+                <Route path={path.SAVED_POSTS} element={<SavedPosts />} />
                 <Route path={`${path.PROFILE}/:username`} element={<UserProfile />} />
             </Route>
 

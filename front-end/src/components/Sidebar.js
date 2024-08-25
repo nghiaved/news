@@ -63,6 +63,13 @@ export default function Sidebar() {
                 </li>
 
                 <li className="nav-item">
+                    <NavLink className="nav-link collapsed" to={path.SAVED_POSTS}>
+                        <i className="bi bi-file-arrow-down"></i>
+                        <span>Saved Posts</span>
+                    </NavLink>
+                </li>
+
+                <li className="nav-item">
                     <NavLink className="nav-link collapsed" to={path.ACCOUNT_SETTINGS}>
                         <i className="bi bi-gear"></i>
                         <span>Account Settings</span>

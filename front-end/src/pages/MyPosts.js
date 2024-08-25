@@ -17,6 +17,7 @@ export default function MyPosts() {
     const [imageUpdate, setImageUpdate] = useState()
     const [statusUpdate, setStatusUpdate] = useState()
     const [edit, setEdit] = useState({})
+    const [detail, setDetail] = useState({})
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
     const statusCreateRef = useRef()
@@ -145,46 +146,50 @@ export default function MyPosts() {
                     </div>
                 </div>
                 <div className='row'>
-                    {myPosts.map((item, index) => {
-                        return <div key={index} className="col-lg-6">
-                            <div className="card">
-                                <div className='card-header d-flex align-items-center justify-content-between'>
-                                    <h5 className='mb-0'>{item.author}</h5>
-                                    <span>{moment(item.createAt).format('YYYY/MM/DD HH:mm')}</span>
+                    {myPosts.map((item, index) => (
+                        <div key={index} className="card">
+                            <div className='card-header d-flex align-items-center justify-content-between'>
+                                <h5 className='mb-0'>{item.author}</h5>
+                                <span>{moment(item.createAt).format('YYYY/MM/DD HH:mm')}</span>
+                            </div>
+                            <div className="card-body post-container" style={index % 2 === 0 ? {} : { flexDirection: 'row-reverse' }}>
+                                <div className='post-image'>
+                                    {item.image && <img src={item.image} className="card-img border" alt="..." />}
                                 </div>
-                                <div className="card-body">
+                                <div className='post-content'>
                                     <ReactQuill value={item.status} theme="bubble" readOnly={true} />
-                                    <div style={{ height: '30vh' }} className='mt-3'>
-                                        {item.image && <img style={{ height: '100%', objectFit: 'cover' }} src={item.image} className="card-img border" alt="..." />}
-                                    </div>
                                 </div>
-                                <div className='card-footer text-end'>
-                                    <button onClick={() => {
-                                        setEdit(item)
-                                        setStatusUpdate(item.status)
-                                    }} className='btn btn-sm btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
-                                    <button className='btn btn-sm btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
-                                    <div className="modal fade" id={`deleteModal${item.id}`} tabIndex="-1" aria-labelledby={`deleteModal${item.id}Label`} aria-hidden="true">
-                                        <div className="modal-dialog modal-dialog-centered">
-                                            <div className="modal-content">
-                                                <div className="modal-header">
-                                                    <h5 className="modal-title" id={`deleteModal${item.id}Label`}>Delete post</h5>
-                                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div className="modal-body">
-                                                    Are you sure you want to delete your post?
-                                                </div>
-                                                <div className="modal-footer">
-                                                    <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
-                                                </div>
+                            </div>
+                            <div className='card-footer text-end'>
+                                <button onClick={() => setDetail(item)} className='btn btn-sm btn-outline-secondary me-3'
+                                    data-bs-toggle="modal" data-bs-target="#detailModal">
+                                    Detail
+                                </button>
+                                <button onClick={() => {
+                                    setEdit(item)
+                                    setStatusUpdate(item.status)
+                                }} className='btn btn-sm btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
+                                <button className='btn btn-sm btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
+                                <div className="modal fade" id={`deleteModal${item.id}`} tabIndex="-1" aria-labelledby={`deleteModal${item.id}Label`} aria-hidden="true">
+                                    <div className="modal-dialog modal-dialog-centered">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title" id={`deleteModal${item.id}Label`}>Delete post</h5>
+                                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div className="modal-body">
+                                                Are you sure you want to delete your post?
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    })}
+                    ))}
                     <Pagination
                         numberOfPages={numberOfPages}
                         pageNumber={pageNumber}
@@ -227,6 +232,22 @@ export default function MyPosts() {
                         </div>}
                 </div>
             </section>
+            <div className="modal fade view-modal" id="detailModal" tabIndex="-1" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Detail</h5>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="modal-body d-flex flex-wrap justify-content-center">
+                            {detail.image && <img style={{ maxHeight: '200px', width: 'auto', objectFit: 'cover' }} src={detail.image} className="card-img border" alt="..." />}
+                            <div className='flex-fill'>
+                                <ReactQuill value={detail.status} theme="bubble" readOnly={true} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main >
     )
 }

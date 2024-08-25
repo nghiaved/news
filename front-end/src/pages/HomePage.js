@@ -62,53 +62,51 @@ export default function HomePage() {
 
     return (
         <main id='main' className='main'>
-            <div className='row'>
-                {posts.map((item, index) => {
-                    return <div key={index} className="col-lg-6">
-                        <div className="card">
-                            <div className='card-header d-flex align-items-center justify-content-between'>
-                                <h5 className='mb-0'>{item.author}</h5>
-                                <span>{moment(item.createAt).format('YYYY/MM/DD HH:mm')}</span>
+            {posts.map((item, index) => (
+                <div key={index} className="card">
+                    <div className='card-header d-flex align-items-center justify-content-between'>
+                        <h5 className='mb-0'>{item.author}</h5>
+                        <span>{moment(item.createAt).format('YYYY/MM/DD HH:mm')}</span>
+                    </div>
+                    <div className="card-body post-container" style={index % 2 === 0 ? {} : { flexDirection: 'row-reverse' }}>
+                        <div className='post-image'>
+                            {item.image && <img src={item.image} className="card-img border" alt="..." />}
+                        </div>
+                        <div className='post-content'>
+                            <ReactQuill value={item.status} theme="bubble" readOnly={true} />
+                        </div>
+                    </div>
+                    <div className='m-4 text-end'>
+                        <div className='d-flex justify-content-between align-items-center'>
+                            <div>
+                                <button onClick={() => handleUpdateLikePost(item.id)} className='btn btn-sm btn-outline-success me-2'>
+                                    Like {item.totalLike > 0 && `(${item.totalLike})`}
+                                </button>
+                                <button onClick={() => handleUpdateDislikePost(item.id)} className='btn btn-sm btn-outline-danger me-2'>
+                                    Dislike {item.totalDislike > 0 && `(${item.totalDislike})`}
+                                </button>
                             </div>
-                            <div className="card-body">
-                                <ReactQuill value={item.status} theme="bubble" readOnly={true} />
-                                <div style={{ height: '30vh' }} className='mt-3'>
-                                    {item.image && <img style={{ height: '100%', objectFit: 'cover' }} src={item.image} className="card-img border" alt="..." />}
-                                </div>
-                            </div>
-                            <div className='m-4 text-end'>
-                                <div className='d-flex justify-content-between align-items-center'>
-                                    <div>
-                                        <button onClick={() => handleUpdateLikePost(item.id)} className='btn btn-sm btn-outline-success me-2'>
-                                            Like {item.totalLike > 0 && `(${item.totalLike})`}
-                                        </button>
-                                        <button onClick={() => handleUpdateDislikePost(item.id)} className='btn btn-sm btn-outline-danger me-2'>
-                                            Dislike {item.totalDislike > 0 && `(${item.totalDislike})`}
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <button onClick={() => handleUpdateViewPost(item)} className='btn btn-sm btn-outline-secondary me-2'
-                                            data-bs-toggle="modal" data-bs-target="#viewModal">
-                                            View {item.totalView > 0 && `(${item.totalView})`}
-                                        </button>
-                                        <button onClick={() => setPostId(item.id)} className='btn btn-sm btn-outline-primary'
-                                            data-bs-toggle="modal" data-bs-target="#commentModal">
-                                            Comment {item.totalComment > 0 && `(${item.totalComment})`}
-                                        </button>
-                                    </div>
-                                </div>
+                            <div>
+                                <button onClick={() => handleUpdateViewPost(item)} className='btn btn-sm btn-outline-secondary me-2'
+                                    data-bs-toggle="modal" data-bs-target="#viewModal">
+                                    View {item.totalView > 0 && `(${item.totalView})`}
+                                </button>
+                                <button onClick={() => setPostId(item.id)} className='btn btn-sm btn-outline-primary'
+                                    data-bs-toggle="modal" data-bs-target="#commentModal">
+                                    Comment {item.totalComment > 0 && `(${item.totalComment})`}
+                                </button>
                             </div>
                         </div>
                     </div>
-                })}
-                <Pagination
-                    numberOfPages={numberOfPages}
-                    pageNumber={pageNumber}
-                    setPageNumber={setPageNumber}
-                />
-                <ModalComment postId={postId} />
-                <DetailPost data={dataView} />
-            </div>
+                </div>
+            ))}
+            <Pagination
+                numberOfPages={numberOfPages}
+                pageNumber={pageNumber}
+                setPageNumber={setPageNumber}
+            />
+            <ModalComment postId={postId} />
+            <DetailPost data={dataView} />
         </main>
     )
 }

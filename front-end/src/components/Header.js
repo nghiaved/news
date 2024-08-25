@@ -205,6 +205,15 @@ export default function Header() {
                                 <hr className="dropdown-divider" />
                             </li>
                             <li>
+                                <Link className="dropdown-item d-flex align-items-center" to={path.SAVED_POSTS}>
+                                    <i className="bi bi-file-arrow-down"></i>
+                                    <span>Saved Posts</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <hr className="dropdown-divider" />
+                            </li>
+                            <li>
                                 <Link className="dropdown-item d-flex align-items-center" to={path.ACCOUNT_SETTINGS}>
                                     <i className="bi bi-gear"></i>
                                     <span>Account Settings</span>

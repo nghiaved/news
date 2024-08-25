@@ -62,3 +62,14 @@
     font-size: 16px;
     height: 160px;
 }
+
+.view-modal {
+    .modal-body {
+        max-height: 70vh;
+        overflow: auto;
+    }
+
+    .ql-editor {
+        height: 100%;
+    }
+}

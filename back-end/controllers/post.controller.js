@@ -166,3 +166,83 @@ exports.deletePost = (req, res) => {
         }
     )
 }
+
+exports.addViewPost = (req, res) => {
+    const { id } = req.body
+
+    if (!id)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query(
+        'SELECT id, totalView FROM posts WHERE id = ?', [parseInt(id)],
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+
+            if (results.length === 0)
+                return res.status(400).json({ message: 'Post not found' })
+
+            db.query('UPDATE posts SET ? WHERE id = ?', [{ totalView: results[0].totalView + 1 }, id],
+                (error, results) => {
+                    if (error)
+                        return res.status(400).json(error)
+
+                    return res.status(200).json({ message: 'Post has been updated totalView' })
+                })
+        }
+    )
+}
+
+exports.addLikePost = (req, res) => {
+    const { id } = req.body
+
+    if (!id)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query(
+        'SELECT id, totalLike FROM posts WHERE id = ?', [parseInt(id)],
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+
+            if (results.length === 0)
+                return res.status(400).json({ message: 'Post not found' })
+
+            db.query('UPDATE posts SET ? WHERE id = ?',
+                [{ totalLike: results[0].totalLike + 1 }, id],
+                (error, results) => {
+                    if (error)
+                        return res.status(400).json(error)
+
+                    return res.status(200).json({ message: 'Post has been updated totalLike' })
+                })
+        }
+    )
+}
+
+exports.addDislikePost = (req, res) => {
+    const { id } = req.body
+
+    if (!id)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query(
+        'SELECT id, totalDislike FROM posts WHERE id = ?', [parseInt(id)],
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+
+            if (results.length === 0)
+                return res.status(400).json({ message: 'Post not found' })
+
+            db.query('UPDATE posts SET ? WHERE id = ?',
+                [{ totalDislike: results[0].totalDislike + 1 }, id],
+                (error, results) => {
+                    if (error)
+                        return res.status(400).json(error)
+
+                    return res.status(200).json({ message: 'Post has been updated totalDislike' })
+                })
+        }
+    )
+}

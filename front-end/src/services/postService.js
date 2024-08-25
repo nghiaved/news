@@ -14,3 +14,12 @@ export const apiPostsUpdatePost = data =>
 
 export const apiPostsDeleteFriend = id =>
     axiosClient.delete('/api/posts/delete-post?id=' + id)
+
+export const apiPostsAddViewPost = id =>
+    axiosClient.patch('/api/posts/add-view-post', { id })
+
+export const apiPostsAddLikePost = id =>
+    axiosClient.patch('/api/posts/add-like-post', { id })
+
+export const apiPostsAddDislikePost = id =>
+    axiosClient.patch('/api/posts/add-dislike-post', { id })

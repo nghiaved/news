@@ -1,59 +1,15 @@
-import React, { useState } from 'react'
-import FileBase64 from 'react-file-base64'
+import React from 'react'
 import { jwtDecode } from 'jwt-decode'
-import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import { Link } from 'react-router-dom'
 import { path } from '../utils'
-import { apiUsersDeleteAccount, apiUsersChangePassword, apiUsersUpdateInfo } from '../services'
+import UpdateInfo from '../components/UpdateInfo'
+import ChangePassword from '../components/ChangePassword'
+import DeleteAccount from '../components/DeleteAccount'
+import Overview from '../components/Overview'
 
 export default function AccountSettings() {
-    const [image, setImage] = useState()
-    const { register: registerUpdateInfo, handleSubmit: handleSubmitUpdateInfo } = useForm()
-    const { register: registerChangePassword, handleSubmit: handleSubmitChangePassword } = useForm()
-    const { register: registerDeleteAccount, handleSubmit: handleSubmitDeleteAccount } = useForm()
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
-    const navigate = useNavigate()
-
-    const handleUpdateInfo = async (data) => {
-        try {
-            image ? data.image = image : data.image = userInfo.image
-            const res = await apiUsersUpdateInfo({ ...data, id: userInfo.id })
-            if (res.status === 200) {
-                toast.success(res.data.message)
-                window.localStorage.setItem('token', JSON.stringify(res.data.token))
-                setTimeout(function () {
-                    navigate(window.location.pathname)
-                }, 3000)
-            }
-        } catch (e) {
-            toast.error(e.data.message)
-        }
-    }
-
-    const handleChangePassword = async (data) => {
-        try {
-            const res = await apiUsersChangePassword({ ...data, id: userInfo.id })
-            if (res.status === 200) {
-                toast.success(res.data.message)
-            }
-        } catch (e) {
-            toast.error(e.data.message)
-        }
-    }
-
-    const handleDeleteAccount = async (data) => {
-        try {
-            const res = await apiUsersDeleteAccount({ ...data, id: userInfo.id })
-            if (res.status === 200) {
-                window.localStorage.removeItem('token')
-                navigate(0)
-            }
-        } catch (e) {
-            toast.error(e.data.message)
-        }
-    }
 
     return (
         <main id="main" className="main">
@@ -100,149 +56,16 @@ export default function AccountSettings() {
                                 </ul>
                                 <div className="tab-content pt-2">
                                     <div className="tab-pane fade show active profile-overview" id="profile-overview">
-                                        <h5 className="card-title">About</h5>
-                                        <p className="small fst-italic">
-                                            {userInfo.about ? userInfo.about : 'No bio yet.'}
-                                        </p>
-                                        <h5 className="card-title">Profile Details</h5>
-                                        <div className="row">
-                                            <div className="col-lg-3 col-md-4 label ">Full Name</div>
-                                            <div className="col-lg-9 col-md-8">{userInfo.firstName + ' ' + userInfo.lastName}</div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Username</div>
-                                            <div className="col-lg-9 col-md-8">{userInfo.username}</div>
-                                        </div>
-                                        {userInfo.email && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Email</div>
-                                            <div className="col-lg-9 col-md-8">{userInfo.email}</div>
-                                        </div>}
-                                        {userInfo.address && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Address</div>
-                                            <div className="col-lg-9 col-md-8">{userInfo.address}</div>
-                                        </div>}
-                                        {userInfo.phone && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Phone</div>
-                                            <div className="col-lg-9 col-md-8">{userInfo.phone}</div>
-                                        </div>}
+                                        <Overview userInfo={userInfo} />
                                     </div>
                                     <div className="tab-pane fade profile-edit pt-3" id="profile-edit">
-                                        <form onSubmit={handleSubmitUpdateInfo(handleUpdateInfo)}>
-                                            <div className="row mb-3">
-                                                <label htmlFor="profileImage" className="col-md-4 col-lg-3 col-form-label">Profile Image</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    {image
-                                                        ? <img className='border' src={image} alt="Profile" />
-                                                        : <img className='border' src={userInfo.image ? userInfo.image : "/img/no-avatar.png"} alt="Profile" />}
-                                                    <div className="pt-2">
-                                                        <label className='set-upload-img'>
-                                                            <FileBase64
-                                                                multiple={false}
-                                                                onDone={({ base64 }) => {
-                                                                    setImage(base64)
-                                                                }}
-                                                            />
-                                                            <i className="btn btn-primary btn-sm bi bi-upload"></i>
-                                                        </label>
-                                                        <i onClick={() => setImage()} className="mx-2 btn btn-danger btn-sm bi bi-trash"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="firstName" className="col-md-4 col-lg-3 col-form-label">First Name</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerUpdateInfo('firstName')} required maxLength={30} autoComplete='off'
-                                                        type="text" className="form-control" id="firstName" defaultValue={userInfo.firstName} />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="lastName" className="col-md-4 col-lg-3 col-form-label">Last Name</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerUpdateInfo('lastName')} required maxLength={30} autoComplete='off'
-                                                        type="text" className="form-control" id="lastName" defaultValue={userInfo.lastName} />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="about" className="col-md-4 col-lg-3 col-form-label">About</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <textarea  {...registerUpdateInfo('about')} maxLength={255} autoComplete='off'
-                                                        className="form-control" id="about" style={{ height: '100px' }} defaultValue={userInfo.about && userInfo.about}></textarea>
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="Address" className="col-md-4 col-lg-3 col-form-label">Address</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerUpdateInfo('address')} maxLength={100} autoComplete='off'
-                                                        type="text" className="form-control" id="Address" defaultValue={userInfo.address && userInfo.address} />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="Phone" className="col-md-4 col-lg-3 col-form-label">Phone</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerUpdateInfo('phone')} maxLength={20} autoComplete='off'
-                                                        type="text" className="form-control" id="Phone" defaultValue={userInfo.phone && userInfo.phone} />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="Email" className="col-md-4 col-lg-3 col-form-label">Email</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerUpdateInfo('email')} maxLength={50} autoComplete='off'
-                                                        type="email" className="form-control" id="Email" defaultValue={userInfo.email && userInfo.email} />
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <button type="submit" className="btn btn-sm btn-primary">Save Changes</button>
-                                            </div>
-                                        </form>
+                                        <UpdateInfo userInfo={userInfo} />
                                     </div>
                                     <div className="tab-pane fade pt-3" id="profile-change-password">
-                                        <form onSubmit={handleSubmitChangePassword(handleChangePassword)}>
-                                            <div className="row mb-3">
-                                                <label htmlFor="currentPassword" className="col-md-4 col-lg-3 col-form-label">Current Password</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerChangePassword('oldPassword')} required maxLength={30} minLength={6} autoComplete='off'
-                                                        type="password" className="form-control" id="currentPassword" />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="newPassword" className="col-md-4 col-lg-3 col-form-label">New Password</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerChangePassword('newPassword')} required maxLength={30} minLength={6} autoComplete='off'
-                                                        type="password" className="form-control" id="newPassword" />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="renewPassword" className="col-md-4 col-lg-3 col-form-label">Re-enter New Password</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerChangePassword('renewPassword')} required maxLength={30} minLength={6} autoComplete='off'
-                                                        type="password" className="form-control" id="renewPassword" />
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <button type="submit" className="btn btn-sm btn-primary">Change Password</button>
-                                            </div>
-                                        </form>
+                                        <ChangePassword userInfo={userInfo} />
                                     </div>
                                     <div className="tab-pane fade pt-3" id="profile-delete-account">
-                                        <form onSubmit={handleSubmitDeleteAccount(handleDeleteAccount)}>
-                                            <div className="row mb-3">
-                                                <label htmlFor="deleteUsername" className="col-md-4 col-lg-3 col-form-label">Username</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerDeleteAccount('username')} required maxLength={30} minLength={6} autoComplete='off'
-                                                        type="text" className="form-control" id="deleteUsername" />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <label htmlFor="deletePassword" className="col-md-4 col-lg-3 col-form-label">Password</label>
-                                                <div className="col-md-8 col-lg-9">
-                                                    <input {...registerDeleteAccount('password')} required maxLength={30} minLength={6} autoComplete='off'
-                                                        type="password" className="form-control" id="deletePassword" />
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <button type="submit" className="btn btn-sm btn-danger">Delete Account</button>
-                                            </div>
-                                        </form>
+                                        <DeleteAccount userInfo={userInfo} />
                                     </div>
                                 </div>
                             </div>

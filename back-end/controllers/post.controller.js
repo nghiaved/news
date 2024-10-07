@@ -2,10 +2,13 @@ const db = require('../config/db')
 const { Buffer } = require('buffer')
 
 exports.createPost = (req, res) => {
-    const { status, author } = req.body
+    const { status, author, hashtags } = req.body
     const image = req.files?.image
+    const image2 = req.files?.image2
+    const image3 = req.files?.image3
+    const image4 = req.files?.image4
 
-    if (!status || !author)
+    if (!status || !author || !hashtags)
         return res.status(400).json({ message: `Please complete all information` })
 
     let imagePath
@@ -14,14 +17,33 @@ exports.createPost = (req, res) => {
         image.mv("./public/images/posts/" + base64Image)
         imagePath = process.env.SERVER + '/images/posts/' + base64Image
     }
+    let imagePath2
+    if (image2) {
+        const base64Image2 = Buffer.from(image2.name + Date.now()).toString('base64')
+        image2.mv("./public/images/posts/" + base64Image2)
+        imagePath2 = process.env.SERVER + '/images/posts/' + base64Image2
+    }
+    let imagePath3
+    if (image3) {
+        const base64Image3 = Buffer.from(image3.name + Date.now()).toString('base64')
+        image3.mv("./public/images/posts/" + base64Image3)
+        imagePath3 = process.env.SERVER + '/images/posts/' + base64Image3
+    }
+    let imagePath4
+    if (image4) {
+        const base64Image4 = Buffer.from(image4.name + Date.now()).toString('base64')
+        image4.mv("./public/images/posts/" + base64Image4)
+        imagePath4 = process.env.SERVER + '/images/posts/' + base64Image4
+    }
 
-    db.query('INSERT INTO posts SET ?', { status, author, image: imagePath },
-        (error, results) => {
-            if (error)
-                return res.status(400).json(error)
-
-            return res.status(200).json({ message: 'Post created successfully' })
-        })
+    db.query('INSERT INTO posts SET ?', {
+        status, author, hashtags, image: imagePath,
+        image2: imagePath2, image3: imagePath3, image4: imagePath4
+    }, (error, results) => {
+        if (error)
+            return res.status(400).json(error)
+        return res.status(200).json({ message: 'Post created successfully' })
+    })
 }
 
 exports.getAllMyPosts = (req, res) => {
@@ -55,7 +77,7 @@ exports.getAllMyPosts = (req, res) => {
 }
 
 exports.getAllPosts = (req, res) => {
-    const { page, limit } = req.query
+    const { page, limit, hashtag } = req.query
 
     if (!page || !limit)
         return res.status(400).json({ message: `Please complete all information` })
@@ -69,8 +91,8 @@ exports.getAllPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query('SELECT * FROM posts ORDER BY createAt DESC LIMIT ? OFFSET ?',
-                    [+limit, +((page - 1) * limit)],
+                db.query('SELECT * FROM posts WHERE hashtags LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?',
+                    [`%${hashtag}%`, +limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)
@@ -87,6 +109,9 @@ exports.getAllPosts = (req, res) => {
 exports.updatePost = (req, res) => {
     const { id } = req.body
     const image = req.files?.image
+    const image2 = req.files?.image2
+    const image3 = req.files?.image3
+    const image4 = req.files?.image4
 
     if (!id)
         return res.status(400).json({ message: `Please complete all information` })
@@ -100,7 +125,7 @@ exports.updatePost = (req, res) => {
             if (results.length === 0)
                 return res.status(400).json({ message: 'Post not found' })
 
-            let data
+            let data = { status: req.body.status, hashtags: req.body.hashtags }
             if (image) {
                 if (results[0].image) {
                     const fs = require("fs")
@@ -110,13 +135,52 @@ exports.updatePost = (req, res) => {
                         console.log(error)
                     }
                 }
-
                 const base64Image = Buffer.from(image.name + Date.now()).toString('base64')
                 const imagePath = process.env.SERVER + '/images/posts/' + base64Image
                 image.mv("./public/images/posts/" + base64Image)
-                data = { status: req.body.status, image: imagePath }
-            } else {
-                data = { status: req.body.status }
+                data.image = imagePath
+            }
+            if (image2) {
+                if (results[0].image2) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].image2.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                const base64Image = Buffer.from(image2.name + Date.now()).toString('base64')
+                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+                image2.mv("./public/images/posts/" + base64Image)
+                data.image2 = imagePath
+            }
+            if (image3) {
+                if (results[0].image3) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].image3.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                const base64Image = Buffer.from(image3.name + Date.now()).toString('base64')
+                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+                image3.mv("./public/images/posts/" + base64Image)
+                data.image3 = imagePath
+            }
+            if (image4) {
+                if (results[0].image4) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].image4.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                const base64Image = Buffer.from(image4.name + Date.now()).toString('base64')
+                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+                image4.mv("./public/images/posts/" + base64Image)
+                data.image4 = imagePath
             }
 
             db.query('UPDATE posts SET ? WHERE id = ?', [data, id],
@@ -149,6 +213,30 @@ exports.deletePost = (req, res) => {
                 const fs = require("fs")
                 try {
                     fs.unlinkSync(results[0].image.replace(process.env.SERVER, './public'))
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+            if (results[0].image2) {
+                const fs = require("fs")
+                try {
+                    fs.unlinkSync(results[0].image2.replace(process.env.SERVER, './public'))
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+            if (results[0].image3) {
+                const fs = require("fs")
+                try {
+                    fs.unlinkSync(results[0].image3.replace(process.env.SERVER, './public'))
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+            if (results[0].image4) {
+                const fs = require("fs")
+                try {
+                    fs.unlinkSync(results[0].image4.replace(process.env.SERVER, './public'))
                 } catch (error) {
                     console.log(error)
                 }

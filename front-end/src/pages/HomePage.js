@@ -6,6 +6,7 @@ import Pagination from '../components/Pagination'
 import ModalComment from '../components/Comment'
 import DetailPost from '../components/DetailPost'
 import { toast } from 'react-toastify'
+import { defaultHashtags } from '../constants/hashtag'
 
 export default function HomePage() {
     const [posts, setPosts] = useState([])
@@ -13,16 +14,17 @@ export default function HomePage() {
     const [numberOfPages, setNumberOfPages] = useState([])
     const [postId, setPostId] = useState(0)
     const [dataView, setDataView] = useState({})
+    const [hashtag, setHashtag] = useState('')
 
     const fetchAllPosts = useCallback(async () => {
         try {
-            const res = await apiPostsGetAllPosts({ page: pageNumber, limit: 4 })
+            const res = await apiPostsGetAllPosts({ page: pageNumber, limit: 4, hashtag })
             setPosts(res.data.posts)
             setNumberOfPages(new Array(res.data.totalPage).fill(null).map((item, index) => ++index))
         } catch (error) {
             console.log(error)
         }
-    }, [pageNumber])
+    }, [pageNumber, hashtag])
 
     useEffect(() => {
         fetchAllPosts()
@@ -62,15 +64,31 @@ export default function HomePage() {
 
     return (
         <main id='main' className='main'>
+            <div className='d-flex align-items-center gap-3 mb-4'>
+                <label>Hashtags: </label>
+                <select onChange={e => setHashtag(e.target.value)} style={{ width: 200 }} className="form-select form-select-sm">
+                    <option value={''}>All</option>
+                    {defaultHashtags.map(item => (
+                        <option value={item} key={item}>{item}</option>
+                    ))}
+                </select>
+            </div>
             {posts.map((item, index) => (
                 <div key={index} className="card">
                     <div className='card-header d-flex align-items-center justify-content-between'>
                         <h5 className='mb-0'>{item.author}</h5>
-                        <span>{moment(item.createAt).format('YYYY/MM/DD HH:mm')}</span>
+                        <span>
+                            {item.hashtags?.split(',').map(item => (
+                                <div key={item} className='btn btn-sm text-secondary'>{item}</div>
+                            ))} {moment(item.createAt).format('YYYY/MM/DD HH:mm')}
+                        </span>
                     </div>
                     <div className="card-body post-container" style={index % 2 === 0 ? {} : { flexDirection: 'row-reverse' }}>
                         <div className='post-image'>
                             {item.image && <img src={item.image} className="card-img border" alt="..." />}
+                            {item.image2 && <img src={item.image2} className="card-img border" alt="..." />}
+                            {item.image3 && <img src={item.image3} className="card-img border" alt="..." />}
+                            {item.image4 && <img src={item.image4} className="card-img border" alt="..." />}
                         </div>
                         <div className='post-content'>
                             <ReactQuill value={item.status} theme="bubble" readOnly={true} />
@@ -106,7 +124,7 @@ export default function HomePage() {
                 setPageNumber={setPageNumber}
             />
             <ModalComment postId={postId} />
-            <DetailPost data={dataView} />
+            <DetailPost data={dataView} modalId={'viewModal'} />
         </main>
     )
 }

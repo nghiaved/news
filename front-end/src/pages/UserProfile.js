@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { useGlobalState } from '../hooks'
 import { apiUsersGetInfo, apiFriendsGetFriend, apiFriendsSendRequest, apiFriendsAcceptRequest, apiFriendsDeleteFriend } from '../services'
 import { path, socket } from '../utils'
+import Overview from '../components/Overview'
 
 export default function UserProfile() {
     const [state, dispatch] = useGlobalState()
@@ -138,31 +139,7 @@ export default function UserProfile() {
                                 }
                                 <div className="tab-content">
                                     <div className="tab-pane fade show active profile-overview">
-                                        <h5 className="card-title">About</h5>
-                                        <p className="small fst-italic">
-                                            {user.about ? user.about : 'No bio yet.'}
-                                        </p>
-                                        <h5 className="card-title">Profile Details</h5>
-                                        <div className="row">
-                                            <div className="col-lg-3 col-md-4 label ">Full Name</div>
-                                            <div className="col-lg-9 col-md-8">{user.firstName + ' ' + user.lastName}</div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Username</div>
-                                            <div className="col-lg-9 col-md-8">{user.username}</div>
-                                        </div>
-                                        {user.email && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Email</div>
-                                            <div className="col-lg-9 col-md-8">{user.email}</div>
-                                        </div>}
-                                        {user.address && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Address</div>
-                                            <div className="col-lg-9 col-md-8">{user.address}</div>
-                                        </div>}
-                                        {user.phone && <div className="row">
-                                            <div className="col-lg-3 col-md-4 label">Phone</div>
-                                            <div className="col-lg-9 col-md-8">{user.phone}</div>
-                                        </div>}
+                                        <Overview userInfo={user} />
                                     </div>
                                 </div>
                             </div>

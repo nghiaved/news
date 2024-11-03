@@ -282,9 +282,9 @@ exports.addViewPost = (req, res) => {
 }
 
 exports.addLikePost = (req, res) => {
-    const { id } = req.body
+    const { id, sender, receiver } = req.body
 
-    if (!id)
+    if (!id || !sender || !receiver)
         return res.status(400).json({ message: `Please complete all information` })
 
     db.query(
@@ -302,16 +302,40 @@ exports.addLikePost = (req, res) => {
                     if (error)
                         return res.status(400).json(error)
 
-                    return res.status(200).json({ message: 'Post has been updated totalLike' })
+                    db.query(
+                        "SELECT * FROM `emotions` WHERE id = ? AND sender = ? AND receiver = ?", [id, sender, receiver],
+                        async (error, emotions) => {
+                            if (error)
+                                return res.status(400).json(error)
+
+                            if (emotions.length === 0) {
+                                db.query('INSERT INTO emotions SET ?', { id, sender, receiver, totalLike: 1, isRead: 0 },
+                                    async (error, results) => {
+                                        if (error)
+                                            return res.status(400).json(error)
+                                        return res.status(200).json({ message: 'Emotions has been created successfully' })
+                                    }
+                                )
+                            } else {
+                                db.query('UPDATE emotions SET ? WHERE id = ? AND sender = ? AND receiver = ?',
+                                    [{ totalLike: emotions[0].totalLike + 1, isRead: 0 }, id, sender, receiver],
+                                    (err, results) => {
+                                        if (err)
+                                            return res.status(400).json(err)
+                                        return res.status(200).json({ message: 'Emotions has been updated successfully' })
+                                    })
+                            }
+                        }
+                    )
                 })
         }
     )
 }
 
 exports.addDislikePost = (req, res) => {
-    const { id } = req.body
+    const { id, sender, receiver } = req.body
 
-    if (!id)
+    if (!id || !sender || !receiver)
         return res.status(400).json({ message: `Please complete all information` })
 
     db.query(
@@ -329,7 +353,31 @@ exports.addDislikePost = (req, res) => {
                     if (error)
                         return res.status(400).json(error)
 
-                    return res.status(200).json({ message: 'Post has been updated totalDislike' })
+                    db.query(
+                        "SELECT * FROM `emotions` WHERE id = ? AND sender = ? AND receiver = ?", [id, sender, receiver],
+                        async (error, emotions) => {
+                            if (error)
+                                return res.status(400).json(error)
+
+                            if (emotions.length === 0) {
+                                db.query('INSERT INTO emotions SET ?', { id, sender, receiver, totalDislike: 1, isRead: 0 },
+                                    async (error, results) => {
+                                        if (error)
+                                            return res.status(400).json(error)
+                                        return res.status(200).json({ message: 'Emotions has been created successfully' })
+                                    }
+                                )
+                            } else {
+                                db.query('UPDATE emotions SET ? WHERE id = ? AND sender = ? AND receiver = ?',
+                                    [{ totalDislike: emotions[0].totalDislike + 1, isRead: 0 }, id, sender, receiver],
+                                    (err, results) => {
+                                        if (err)
+                                            return res.status(400).json(err)
+                                        return res.status(200).json({ message: 'Emotions has been updated successfully' })
+                                    })
+                            }
+                        }
+                    )
                 })
         }
     )

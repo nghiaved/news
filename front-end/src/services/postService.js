@@ -18,8 +18,8 @@ export const apiPostsDeleteFriend = id =>
 export const apiPostsAddViewPost = id =>
     axiosClient.patch('/api/posts/add-view-post', { id })
 
-export const apiPostsAddLikePost = id =>
-    axiosClient.patch('/api/posts/add-like-post', { id })
+export const apiPostsAddLikePost = data =>
+    axiosClient.patch('/api/posts/add-like-post', data)
 
-export const apiPostsAddDislikePost = id =>
-    axiosClient.patch('/api/posts/add-dislike-post', { id })
+export const apiPostsAddDislikePost = data =>
+    axiosClient.patch('/api/posts/add-dislike-post', data)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import moment from 'moment'
@@ -10,11 +10,13 @@ import {
 } from '../services'
 import { path, socket } from '../utils'
 import SearchUser from './SearchUser'
+import { apiEmotionsGetAllEmotions, apiEmotionsReadEmotions } from '../services/emotionService'
 
 export default function Header() {
     const [state, dispatch] = useGlobalState()
     const [fetchAgain, setFetchAgain] = useState(false)
     const [listFriends, setListFriends] = useState([])
+    const [notifications, setNotifications] = useState([])
     const [conversations, setConversations] = useState([])
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = token ? jwtDecode(token) : {}
@@ -38,10 +40,20 @@ export default function Header() {
         return item.latestMessage.isRead || item.latestMessage.sender === userInfo.id ? total : ++total
     }, 0)
 
+    const fetchNotifications = useCallback(async () => {
+        try {
+            const resEmotions = await apiEmotionsGetAllEmotions(userInfo.username)
+            setNotifications(resEmotions.data.emotions);
+        } catch (error) {
+            console.log(error);
+        }
+    }, [userInfo.username])
+
     useEffect(() => {
         if (state.fetchAgain !== fetchAgain || state.userConversation) {
             setFetchAgain(state.fetchAgain)
         }
+        fetchNotifications()
 
         const fetchApi = async () => {
             try {
@@ -57,9 +69,8 @@ export default function Header() {
                 console.log(error)
             }
         }
-
         fetchApi()
-    }, [userInfo.username, userInfo.id, state.fetchAgain, fetchAgain, state.userConversation])
+    }, [userInfo.username, userInfo.id, state.fetchAgain, fetchAgain, state.userConversation, fetchNotifications])
 
     const handleAcceptRequest = async (e, id, friendUsername) => {
         e.stopPropagation()
@@ -89,6 +100,20 @@ export default function Header() {
         }
     }
 
+    const handleReadEmotion = async (item) => {
+        try {
+            const resp = await apiEmotionsReadEmotions({
+                id: item.id,
+                sender: item.sender,
+                receiver: item.receiver,
+            })
+            fetchNotifications()
+            toast.success(resp.data.message)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
         <header id="header" className="header fixed-top d-flex align-items-center">
             <div className="d-flex align-items-center justify-content-between">
@@ -109,11 +134,11 @@ export default function Header() {
                     <li className="nav-item dropdown">
                         <Link className="nav-link nav-icon" to="/" data-bs-toggle="dropdown">
                             <i className="bi bi-bell"></i>
-                            {listFriends.length > 0 && <span className="badge bg-primary badge-number">{listFriends.length}</span>}
+                            {Number(listFriends.length) + Number(notifications.length) > 0 && <span className="badge bg-primary badge-number">{Number(listFriends.length) + Number(notifications.length)}</span>}
                         </Link>
                         <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
                             <li className="dropdown-header">
-                                You have {listFriends.length} new notifications
+                                You have {Number(listFriends.length) + Number(notifications.length)} new notifications
                                 <Link to="/"><span className="badge rounded-pill bg-primary p-2 ms-2">View all</span></Link>
                             </li>
                             {listFriends.map((item, index) => {
@@ -132,6 +157,33 @@ export default function Header() {
                                                 <button onClick={(e) => handleDeleteFriend(e, item.id, item.username)} className='btn btn-secondary py-0 px-3'>Delete</button>
                                             </p>
                                             <p>{moment(item.createAt).fromNow()}</p>
+                                        </div>
+                                    </li>
+                                </div>
+                            })}
+                            {notifications.map((item, index) => {
+                                return <div key={index}>
+                                    <li>
+                                        <hr className="dropdown-divider" />
+                                    </li>
+                                    <li className="notification-item align-items-start">
+                                        <Link to={`${path.PROFILE}/${item.username}`}>
+                                            <img src={item.image ? item.image : "/img/no-avatar.png"} alt="Profile" className="rounded-circle img-in-notify" />
+                                        </Link>
+                                        <div className='ms-2'>
+                                            <h4>{item.firstName} interact your post.</h4>
+                                            <p>
+                                                {item.totalLike > 0 && (
+                                                    <button className='btn btn-success me-2 py-0 px-3'>Like {item.totalLike > 0 && `(${item.totalLike})`}</button>
+                                                )}
+                                                {item.totalDislike > 0 && (
+                                                    <button className='btn btn-danger me-2 py-0 px-3'>Dislike {item.totalDislike > 0 && `(${item.totalDislike})`}</button>
+                                                )}
+                                            </p>
+                                            <p className='d-flex justify-content-between align-items-center mt-3'>
+                                                <div>{moment(item.createAt).fromNow()}</div>
+                                                <button onClick={() => handleReadEmotion(item)} className='btn btn-sm btn-outline-danger py-0'>x</button>
+                                            </p>
                                         </div>
                                     </li>
                                 </div>

@@ -28,6 +28,7 @@ app.use('/api/posts', require('./routes/post.route'))
 app.use('/api/conversations', require('./routes/conversation.route'))
 app.use('/api/messages', require('./routes/message.route'))
 app.use('/api/comments', require('./routes/comment.route'))
+app.use('/api/emotions', require('./routes/emotion.route'))
 
 const server = http.createServer(app)
 

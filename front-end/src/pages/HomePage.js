@@ -7,6 +7,8 @@ import ModalComment from '../components/Comment'
 import DetailPost from '../components/DetailPost'
 import { toast } from 'react-toastify'
 import { defaultHashtags } from '../constants/hashtag'
+import { socket } from '../utils'
+import { jwtDecode } from 'jwt-decode'
 
 export default function HomePage() {
     const [posts, setPosts] = useState([])
@@ -15,6 +17,8 @@ export default function HomePage() {
     const [postId, setPostId] = useState(0)
     const [dataView, setDataView] = useState({})
     const [hashtag, setHashtag] = useState('')
+    const token = JSON.parse(window.localStorage.getItem('token'))
+    const userInfo = jwtDecode(token)
 
     const fetchAllPosts = useCallback(async () => {
         try {
@@ -40,9 +44,16 @@ export default function HomePage() {
         }
     }
 
-    const handleUpdateLikePost = async (id) => {
+    const handleUpdateLikePost = async (item) => {
         try {
-            await apiPostsAddLikePost(id)
+            await apiPostsAddLikePost({
+                id: item.id,
+                sender: userInfo.username,
+                receiver: item.author,
+            })
+            if (userInfo.username !== item.author) {
+                socket.emit('request-friend', item.author)
+            }
             toast.success('Like successfully!')
             fetchAllPosts()
         } catch (error) {
@@ -51,10 +62,17 @@ export default function HomePage() {
         }
     }
 
-    const handleUpdateDislikePost = async (id) => {
+    const handleUpdateDislikePost = async (item) => {
         try {
-            await apiPostsAddDislikePost(id, 'totalDislike')
-            toast.success('Dislike successfully!')
+            await apiPostsAddDislikePost({
+                id: item.id,
+                sender: userInfo.username,
+                receiver: item.author,
+            })
+            if (userInfo.username !== item.author) {
+                socket.emit('request-friend', item.author)
+            }
+            toast.error('Dislike successfully!')
             fetchAllPosts()
         } catch (error) {
             console.log(error)
@@ -97,10 +115,10 @@ export default function HomePage() {
                     <div className='m-4 text-end'>
                         <div className='d-flex justify-content-between align-items-center'>
                             <div>
-                                <button onClick={() => handleUpdateLikePost(item.id)} className='btn btn-sm btn-outline-success me-2'>
+                                <button onClick={() => handleUpdateLikePost(item)} className='btn btn-sm btn-outline-success me-2'>
                                     Like {item.totalLike > 0 && `(${item.totalLike})`}
                                 </button>
-                                <button onClick={() => handleUpdateDislikePost(item.id)} className='btn btn-sm btn-outline-danger me-2'>
+                                <button onClick={() => handleUpdateDislikePost(item)} className='btn btn-sm btn-outline-danger me-2'>
                                     Dislike {item.totalDislike > 0 && `(${item.totalDislike})`}
                                 </button>
                             </div>

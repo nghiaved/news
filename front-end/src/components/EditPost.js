@@ -62,6 +62,16 @@ export default function EditPost({ edit, userInfo, fetchAllMyPosts }) {
         }
     }
 
+    const handleAddHashtag = async (e) => {
+        e.preventDefault()
+        let hashtag = e.target.hashtag?.value
+        if (!hashtag.startsWith('#')) {
+            hashtag = '#' + hashtag
+        }
+        handleSelectHashtagUpdate(hashtag)
+        e.target.hashtag.value = ''
+    }
+
     return (
         <div className="modal fade" id="updateModal" tabIndex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered">
@@ -152,6 +162,19 @@ export default function EditPost({ edit, userInfo, fetchAllMyPosts }) {
                                     {item}
                                 </button>
                             ))}
+                            {hashtagsUpdate?.length > 0 && hashtagsUpdate?.filter(item => !defaultHashtags?.includes(item)).map(item => (
+                                <button
+                                    key={item}
+                                    onClick={() => handleSelectHashtagUpdate(item)}
+                                    className={`btn btn-sm ${hashtagsUpdate?.includes(item) ? 'btn-primary' : 'btn-outline-primary'}`}
+                                >
+                                    {item}
+                                </button>
+                            ))}
+                            <form onSubmit={handleAddHashtag} className="input-group mt-3">
+                                <input required name='hashtag' autoComplete='off' type="text" className="form-control form-control-sm" placeholder='Enter a hashtag...' />
+                                <button className="input-group-text">Add</button>
+                            </form>
                         </div>
                     </div>
                     <div className="modal-footer">

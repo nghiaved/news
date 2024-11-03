@@ -44,6 +44,13 @@ export default function DetailPost({ data, modalId }) {
                                     alt="..."
                                 />
                             </div>}
+                            {data.video && <div style={{ padding: 10 }}>
+                                <video controls autoPlay
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
+                                    <source src={data.video} />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>}
                         </div>
                         <div className='flex-fill'>
                             <ReactQuill value={data.status} theme="bubble" readOnly={true} />

@@ -9,9 +9,12 @@ export default function CreatePost({ userInfo, fetchAllMyPosts }) {
     const [imageCreate2, setImageCreate2] = useState()
     const [imageCreate3, setImageCreate3] = useState()
     const [imageCreate4, setImageCreate4] = useState()
+    const [videoFile, setVideoFile] = useState()
+    const [videoUrl, setVideoUrl] = useState()
     const [statusCreate, setStatusCreate] = useState()
     const [hashtagsCreate, setHashtagsCreate] = useState([])
     const statusCreateRef = useRef()
+    const fileInputRef = useRef()
 
     const handleSelectHashtagCreate = value => {
         setStatusCreate(statusCreateRef.current?.value)
@@ -40,6 +43,7 @@ export default function CreatePost({ userInfo, fetchAllMyPosts }) {
             if (imageCreate2) data.append('image2', imageCreate2)
             if (imageCreate3) data.append('image3', imageCreate3)
             if (imageCreate4) data.append('image4', imageCreate4)
+            if (videoFile) data.append('video', videoFile)
             const res = await apiPostsCreatePost(data)
             if (res.status === 200) {
                 toast.success(res.data.message)
@@ -48,12 +52,35 @@ export default function CreatePost({ userInfo, fetchAllMyPosts }) {
                 setImageCreate2()
                 setImageCreate3()
                 setImageCreate4()
+                setVideoFile()
+                setVideoUrl()
                 setStatusCreate()
                 setHashtagsCreate([])
             }
         } catch (error) {
             console.log(error)
         }
+    }
+
+    const handleFileChange = (event) => {
+        setStatusCreate(statusCreateRef.current.value)
+        const file = event.target.files[0];
+        if (file && file.type.startsWith("video/")) {
+            setVideoFile(file);
+            setVideoUrl(URL.createObjectURL(file));
+        } else {
+            toast.error("Please upload a valid video file.");
+        }
+    };
+
+    const handleAddHashtag = async (e) => {
+        e.preventDefault()
+        let hashtag = e.target.hashtag?.value
+        if (!hashtag.startsWith('#')) {
+            hashtag = '#' + hashtag
+        }
+        handleSelectHashtagCreate(hashtag)
+        e.target.hashtag.value = ''
     }
 
     return (
@@ -136,6 +163,29 @@ export default function CreatePost({ userInfo, fetchAllMyPosts }) {
                                 </div>
                             </div>
                         </div>
+                        <div className="text-center mt-3">
+                            <div className="d-flex justify-content-center pt-2">
+                                <div className='me-2'>Upload a video (mp4, webm):</div>
+                                <label className='set-upload-img'>
+                                    <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileChange} />
+                                    <i className="btn btn-primary btn-sm bi bi-upload"></i>
+                                </label>
+                                <i onClick={() => {
+                                    setStatusCreate(statusCreateRef.current.value)
+                                    setVideoFile(null)
+                                    setVideoUrl('')
+                                    fileInputRef.current.value = ''
+                                }} className="ms-2 btn btn-danger btn-sm bi bi-trash"></i>
+                            </div>
+                            {videoUrl && (
+                                <div className='mt-3'>
+                                    <video width="400" controls autoPlay>
+                                        <source src={videoUrl} type={videoFile.type} />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            )}
+                        </div>
                         <div className='mt-4 d-flex gap-2 flex-wrap'>
                             {defaultHashtags.map(item => (
                                 <button
@@ -146,7 +196,20 @@ export default function CreatePost({ userInfo, fetchAllMyPosts }) {
                                     {item}
                                 </button>
                             ))}
+                            {hashtagsCreate?.filter(item => !defaultHashtags?.includes(item)).map(item => (
+                                <button
+                                    key={item}
+                                    onClick={() => handleSelectHashtagCreate(item)}
+                                    className={`btn btn-sm ${hashtagsCreate?.includes(item) ? 'btn-primary' : 'btn-outline-primary'}`}
+                                >
+                                    {item}
+                                </button>
+                            ))}
                         </div>
+                        <form onSubmit={handleAddHashtag} className="input-group mt-3">
+                            <input required name='hashtag' autoComplete='off' type="text" className="form-control form-control-sm" placeholder='Enter a hashtag...' />
+                            <button className="input-group-text">Add</button>
+                        </form>
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>

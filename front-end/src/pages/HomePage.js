@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import ReactQuill from 'react-quill'
 import moment from 'moment'
 import { apiPostsAddViewPost, apiPostsGetAllPosts, apiPostsAddDislikePost, apiPostsAddLikePost } from '../services'
@@ -19,6 +19,7 @@ export default function HomePage() {
     const [hashtag, setHashtag] = useState('')
     const token = JSON.parse(window.localStorage.getItem('token'))
     const userInfo = jwtDecode(token)
+    const selectHashtagRef = useRef()
 
     const fetchAllPosts = useCallback(async () => {
         try {
@@ -80,16 +81,32 @@ export default function HomePage() {
         }
     }
 
+    const handleSearchHashtag = async (e) => {
+        e.preventDefault()
+        setHashtag(e.target.hashtag.value)
+        selectHashtagRef.current.value = ''
+    }
+
+    const handleClearSearchHashtag = async () => {
+        setHashtag('')
+        selectHashtagRef.current.value = ''
+    }
+
     return (
         <main id='main' className='main'>
             <div className='d-flex align-items-center gap-3 mb-4'>
                 <label>Hashtags: </label>
-                <select onChange={e => setHashtag(e.target.value)} style={{ width: 200 }} className="form-select form-select-sm">
+                <select ref={selectHashtagRef} onChange={e => setHashtag(e.target.value)} style={{ width: 200 }} className="form-select form-select-sm">
                     <option value={''}>All</option>
                     {defaultHashtags.map(item => (
                         <option value={item} key={item}>{item}</option>
                     ))}
                 </select>
+                <form onSubmit={handleSearchHashtag} className="input-group">
+                    <input required name='hashtag' className='form-control form-control-sm' style={{ maxWidth: 200 }} placeholder='Enter a hashtag...' />
+                    <button type='submit' className="input-group-text">Search</button>
+                    <button type='reset' onClick={handleClearSearchHashtag} className="input-group-text">Clear</button>
+                </form>
             </div>
             {posts.map((item, index) => (
                 <div key={index} className="card">
@@ -102,13 +119,13 @@ export default function HomePage() {
                         </span>
                     </div>
                     <div className="card-body post-container" style={index % 2 === 0 ? {} : { flexDirection: 'row-reverse' }}>
-                        <div className='post-image'>
+                        <div className='post-image d-flex' style={{ overflow: 'auto' }}>
                             {item.image && <img src={item.image} className="card-img border" alt="..." />}
                             {item.image2 && <img src={item.image2} className="card-img border" alt="..." />}
                             {item.image3 && <img src={item.image3} className="card-img border" alt="..." />}
                             {item.image4 && <img src={item.image4} className="card-img border" alt="..." />}
                         </div>
-                        <div className='post-content'>
+                        <div className='post-content' style={{ minWidth: 300 }}>
                             <ReactQuill value={item.status} theme="bubble" readOnly={true} />
                         </div>
                     </div>

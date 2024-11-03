@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 03, 2024 at 06:19 AM
+-- Generation Time: Nov 03, 2024 at 09:48 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -106,6 +106,7 @@ CREATE TABLE `posts` (
   `image2` varchar(255) DEFAULT NULL,
   `image3` varchar(255) DEFAULT NULL,
   `image4` varchar(255) DEFAULT NULL,
+  `video` varchar(255) DEFAULT NULL,
   `totalComment` int(11) DEFAULT NULL,
   `totalView` int(11) DEFAULT NULL,
   `totalLike` int(11) DEFAULT NULL,

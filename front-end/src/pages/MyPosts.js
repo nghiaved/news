@@ -74,13 +74,13 @@ export default function MyPosts() {
                                 </span>
                             </div>
                             <div className="card-body post-container" style={index % 2 === 0 ? {} : { flexDirection: 'row-reverse' }}>
-                                <div className='post-image'>
+                                <div className='post-image d-flex' style={{ overflow: 'auto' }}>
                                     {item.image && <img src={item.image} className="card-img border" alt="..." />}
                                     {item.image2 && <img src={item.image2} className="card-img border" alt="..." />}
                                     {item.image3 && <img src={item.image3} className="card-img border" alt="..." />}
                                     {item.image4 && <img src={item.image4} className="card-img border" alt="..." />}
                                 </div>
-                                <div className='post-content'>
+                                <div className='post-content' style={{ minWidth: 300 }}>
                                     <ReactQuill value={item.status} theme="bubble" readOnly={true} />
                                 </div>
                             </div>

@@ -7,6 +7,7 @@ exports.createPost = (req, res) => {
     const image2 = req.files?.image2
     const image3 = req.files?.image3
     const image4 = req.files?.image4
+    const video = req.files?.video
 
     if (!status || !author || !hashtags)
         return res.status(400).json({ message: `Please complete all information` })
@@ -35,10 +36,16 @@ exports.createPost = (req, res) => {
         image4.mv("./public/images/posts/" + base64Image4)
         imagePath4 = process.env.SERVER + '/images/posts/' + base64Image4
     }
+    let videoPath
+    if (video) {
+        const base64Video = Buffer.from(video.name + Date.now()).toString('base64')
+        video.mv("./public/images/posts/" + base64Video)
+        videoPath = process.env.SERVER + '/images/posts/' + base64Video
+    }
 
     db.query('INSERT INTO posts SET ?', {
         status, author, hashtags, image: imagePath,
-        image2: imagePath2, image3: imagePath3, image4: imagePath4
+        image2: imagePath2, image3: imagePath3, image4: imagePath4, video: videoPath
     }, (error, results) => {
         if (error)
             return res.status(400).json(error)
@@ -112,12 +119,13 @@ exports.updatePost = (req, res) => {
     const image2 = req.files?.image2
     const image3 = req.files?.image3
     const image4 = req.files?.image4
+    const video = req.files?.video
 
     if (!id)
         return res.status(400).json({ message: `Please complete all information` })
 
     db.query(
-        'SELECT id, image FROM posts WHERE id = ?', [parseInt(id)],
+        'SELECT * FROM posts WHERE id = ?', [parseInt(id)],
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
@@ -182,6 +190,20 @@ exports.updatePost = (req, res) => {
                 image4.mv("./public/images/posts/" + base64Image)
                 data.image4 = imagePath
             }
+            if (video) {
+                if (results[0].video) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].video.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                const base64Path = Buffer.from(video.name + Date.now()).toString('base64')
+                const videoPath = process.env.SERVER + '/images/posts/' + base64Path
+                video.mv("./public/images/posts/" + base64Path)
+                data.video = videoPath
+            }
 
             db.query('UPDATE posts SET ? WHERE id = ?', [data, id],
                 (error, results) => {
@@ -201,7 +223,7 @@ exports.deletePost = (req, res) => {
         return res.status(400).json({ message: `Please complete all information` })
 
     db.query(
-        'SELECT id, image FROM posts WHERE id = ?', [id],
+        'SELECT * FROM posts WHERE id = ?', [id],
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
@@ -237,6 +259,14 @@ exports.deletePost = (req, res) => {
                 const fs = require("fs")
                 try {
                     fs.unlinkSync(results[0].image4.replace(process.env.SERVER, './public'))
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+            if (results[0].video) {
+                const fs = require("fs")
+                try {
+                    fs.unlinkSync(results[0].video.replace(process.env.SERVER, './public'))
                 } catch (error) {
                     console.log(error)
                 }

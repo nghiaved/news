@@ -12,43 +12,61 @@ exports.createPost = (req, res) => {
     if (!status || !author || !hashtags)
         return res.status(400).json({ message: `Please complete all information` })
 
-    let imagePath
-    if (image) {
-        const base64Image = Buffer.from(image.name + Date.now()).toString('base64')
-        image.mv("./public/images/posts/" + base64Image)
-        imagePath = process.env.SERVER + '/images/posts/' + base64Image
-    }
-    let imagePath2
-    if (image2) {
-        const base64Image2 = Buffer.from(image2.name + Date.now()).toString('base64')
-        image2.mv("./public/images/posts/" + base64Image2)
-        imagePath2 = process.env.SERVER + '/images/posts/' + base64Image2
-    }
-    let imagePath3
-    if (image3) {
-        const base64Image3 = Buffer.from(image3.name + Date.now()).toString('base64')
-        image3.mv("./public/images/posts/" + base64Image3)
-        imagePath3 = process.env.SERVER + '/images/posts/' + base64Image3
-    }
-    let imagePath4
-    if (image4) {
-        const base64Image4 = Buffer.from(image4.name + Date.now()).toString('base64')
-        image4.mv("./public/images/posts/" + base64Image4)
-        imagePath4 = process.env.SERVER + '/images/posts/' + base64Image4
-    }
-    let videoPath
-    if (video) {
-        const base64Video = Buffer.from(video.name + Date.now()).toString('base64')
-        video.mv("./public/images/posts/" + base64Video)
-        videoPath = process.env.SERVER + '/images/posts/' + base64Video
-    }
-
     db.query('INSERT INTO posts SET ?', {
-        status, author, hashtags, image: imagePath,
-        image2: imagePath2, image3: imagePath3, image4: imagePath4, video: videoPath
+        status, author, hashtags
     }, (error, results) => {
         if (error)
             return res.status(400).json(error)
+        if (image) {
+            const base64Image = Buffer.from(image.name + Date.now()).toString('base64')
+            image.mv("./public/images/posts/" + base64Image)
+            const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+            db.query('INSERT INTO post_media SET ?', {
+                postId: results.insertId,
+                mediaType: 'image',
+                mediaUrl: imagePath,
+            })
+        }
+        if (image2) {
+            const base64Image2 = Buffer.from(image2.name + Date.now()).toString('base64')
+            image2.mv("./public/images/posts/" + base64Image2)
+            const imagePath2 = process.env.SERVER + '/images/posts/' + base64Image2
+            db.query('INSERT INTO post_media SET ?', {
+                postId: results.insertId,
+                mediaType: 'image2',
+                mediaUrl: imagePath2,
+            })
+        }
+        if (image3) {
+            const base64Image3 = Buffer.from(image3.name + Date.now()).toString('base64')
+            image3.mv("./public/images/posts/" + base64Image3)
+            const imagePath3 = process.env.SERVER + '/images/posts/' + base64Image3
+            db.query('INSERT INTO post_media SET ?', {
+                postId: results.insertId,
+                mediaType: 'image3',
+                mediaUrl: imagePath3,
+            })
+        }
+        if (image4) {
+            const base64Image4 = Buffer.from(image4.name + Date.now()).toString('base64')
+            image4.mv("./public/images/posts/" + base64Image4)
+            const imagePath4 = process.env.SERVER + '/images/posts/' + base64Image4
+            db.query('INSERT INTO post_media SET ?', {
+                postId: results.insertId,
+                mediaType: 'image4',
+                mediaUrl: imagePath4,
+            })
+        }
+        if (video) {
+            const base64Video = Buffer.from(video.name + Date.now()).toString('base64')
+            video.mv("./public/images/posts/" + base64Video)
+            const videoPath = process.env.SERVER + '/images/posts/' + base64Video
+            db.query('INSERT INTO post_media SET ?', {
+                postId: results.insertId,
+                mediaType: 'video',
+                mediaUrl: videoPath,
+            })
+        }
         return res.status(200).json({ message: 'Post created successfully' })
     })
 }
@@ -68,14 +86,32 @@ exports.getAllMyPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query('SELECT * FROM posts WHERE author = ? ORDER BY createAt DESC LIMIT ? OFFSET ?',
+                db.query(`SELECT * FROM posts INNER JOIN post_media ON posts.id = post_media.postId 
+                    WHERE author = ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
                     [author, +limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)
-
-                        if (results)
-                            return res.status(200).json({ totalData, totalPage, page, limit, posts: results })
+                        const postsMap = {}
+                        results.forEach(row => {
+                            if (!postsMap[row.postId]) {
+                                postsMap[row.postId] = {
+                                    id: row.postId,
+                                    author: row.author,
+                                    createAt: row.createAt,
+                                    status: row.status,
+                                    totalComment: row.totalComment,
+                                    totalView: row.totalView,
+                                    totalLike: row.totalLike,
+                                    totalDislike: row.totalDislike,
+                                    hashtags: row.hashtags,
+                                }
+                            }
+                            if (row.postId) {
+                                postsMap[row.postId][row.mediaType] = row.mediaUrl
+                            }
+                        })
+                        return res.status(200).json({ totalData, totalPage, page, limit, posts: Object.values(postsMap) })
                     }
                 )
             }
@@ -98,14 +134,32 @@ exports.getAllPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query('SELECT * FROM posts WHERE hashtags LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?',
+                db.query(`SELECT * FROM posts INNER JOIN post_media ON posts.id = post_media.postId
+                    WHERE hashtags LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
                     [`%${hashtag}%`, +limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)
-
-                        if (results)
-                            return res.status(200).json({ totalData, totalPage, page, limit, posts: results })
+                        const postsMap = {}
+                        results.forEach(row => {
+                            if (!postsMap[row.postId]) {
+                                postsMap[row.postId] = {
+                                    id: row.postId,
+                                    author: row.author,
+                                    createAt: row.createAt,
+                                    status: row.status,
+                                    totalComment: row.totalComment,
+                                    totalView: row.totalView,
+                                    totalLike: row.totalLike,
+                                    totalDislike: row.totalDislike,
+                                    hashtags: row.hashtags,
+                                }
+                            }
+                            if (row.postId) {
+                                postsMap[row.postId][row.mediaType] = row.mediaUrl
+                            }
+                        })
+                        return res.status(200).json({ totalData, totalPage, page, limit, posts: Object.values(postsMap) })
                     }
                 )
             }
@@ -124,96 +178,125 @@ exports.updatePost = (req, res) => {
     if (!id)
         return res.status(400).json({ message: `Please complete all information` })
 
-    db.query(
-        'SELECT * FROM posts WHERE id = ?', [parseInt(id)],
-        async (error, results) => {
-            if (error)
-                return res.status(400).json(error)
+    db.query('UPDATE posts SET ? WHERE id = ?', [{ status: req.body.status, hashtags: req.body.hashtags }, id])
 
-            if (results.length === 0)
-                return res.status(400).json({ message: 'Post not found' })
+    if (image) {
+        db.query(
+            'SELECT * FROM post_media WHERE postId = ? AND mediaType = ?', [id, 'image'],
+            async (_, results) => {
+                if (results.length > 0) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].mediaUrl.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        )
+        const base64Image = Buffer.from(image.name + Date.now()).toString('base64')
+        image.mv("./public/images/posts/" + base64Image)
+        const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+        db.query('INSERT INTO post_media SET ?', {
+            postId: id,
+            mediaType: 'image',
+            mediaUrl: imagePath,
+        })
+    }
+    if (image2) {
+        db.query(
+            'SELECT * FROM post_media WHERE postId = ? AND mediaType = ?', [id, 'image2'],
+            async (_, results) => {
+                if (results.length > 0) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].mediaUrl.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        )
+        const base64Image = Buffer.from(image2.name + Date.now()).toString('base64')
+        image2.mv("./public/images/posts/" + base64Image)
+        const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+        db.query('INSERT INTO post_media SET ?', {
+            postId: id,
+            mediaType: 'image2',
+            mediaUrl: imagePath,
+        })
+    }
+    if (image3) {
+        db.query(
+            'SELECT * FROM post_media WHERE postId = ? AND mediaType = ?', [id, 'image3'],
+            async (_, results) => {
+                if (results.length > 0) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].mediaUrl.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        )
+        const base64Image = Buffer.from(image3.name + Date.now()).toString('base64')
+        image3.mv("./public/images/posts/" + base64Image)
+        const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+        db.query('INSERT INTO post_media SET ?', {
+            postId: id,
+            mediaType: 'image3',
+            mediaUrl: imagePath,
+        })
+    }
+    if (image4) {
+        db.query(
+            'SELECT * FROM post_media WHERE postId = ? AND mediaType = ?', [id, 'image4'],
+            async (_, results) => {
+                if (results.length > 0) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].mediaUrl.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        )
+        const base64Image = Buffer.from(image4.name + Date.now()).toString('base64')
+        image4.mv("./public/images/posts/" + base64Image)
+        const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+        db.query('INSERT INTO post_media SET ?', {
+            postId: id,
+            mediaType: 'image4',
+            mediaUrl: imagePath,
+        })
+    }
+    if (video) {
+        db.query(
+            'SELECT * FROM post_media WHERE postId = ? AND mediaType = ?', [id, 'video'],
+            async (_, results) => {
+                if (results.length > 0) {
+                    const fs = require("fs")
+                    try {
+                        fs.unlinkSync(results[0].mediaUrl.replace(process.env.SERVER, './public'))
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        )
+        const base64Image = Buffer.from(video.name + Date.now()).toString('base64')
+        video.mv("./public/images/posts/" + base64Image)
+        const imagePath = process.env.SERVER + '/images/posts/' + base64Image
+        db.query('INSERT INTO post_media SET ?', {
+            postId: id,
+            mediaType: 'video',
+            mediaUrl: imagePath,
+        })
+    }
 
-            let data = { status: req.body.status, hashtags: req.body.hashtags }
-            if (image) {
-                if (results[0].image) {
-                    const fs = require("fs")
-                    try {
-                        fs.unlinkSync(results[0].image.replace(process.env.SERVER, './public'))
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-                const base64Image = Buffer.from(image.name + Date.now()).toString('base64')
-                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
-                image.mv("./public/images/posts/" + base64Image)
-                data.image = imagePath
-            }
-            if (image2) {
-                if (results[0].image2) {
-                    const fs = require("fs")
-                    try {
-                        fs.unlinkSync(results[0].image2.replace(process.env.SERVER, './public'))
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-                const base64Image = Buffer.from(image2.name + Date.now()).toString('base64')
-                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
-                image2.mv("./public/images/posts/" + base64Image)
-                data.image2 = imagePath
-            }
-            if (image3) {
-                if (results[0].image3) {
-                    const fs = require("fs")
-                    try {
-                        fs.unlinkSync(results[0].image3.replace(process.env.SERVER, './public'))
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-                const base64Image = Buffer.from(image3.name + Date.now()).toString('base64')
-                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
-                image3.mv("./public/images/posts/" + base64Image)
-                data.image3 = imagePath
-            }
-            if (image4) {
-                if (results[0].image4) {
-                    const fs = require("fs")
-                    try {
-                        fs.unlinkSync(results[0].image4.replace(process.env.SERVER, './public'))
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-                const base64Image = Buffer.from(image4.name + Date.now()).toString('base64')
-                const imagePath = process.env.SERVER + '/images/posts/' + base64Image
-                image4.mv("./public/images/posts/" + base64Image)
-                data.image4 = imagePath
-            }
-            if (video) {
-                if (results[0].video) {
-                    const fs = require("fs")
-                    try {
-                        fs.unlinkSync(results[0].video.replace(process.env.SERVER, './public'))
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-                const base64Path = Buffer.from(video.name + Date.now()).toString('base64')
-                const videoPath = process.env.SERVER + '/images/posts/' + base64Path
-                video.mv("./public/images/posts/" + base64Path)
-                data.video = videoPath
-            }
-
-            db.query('UPDATE posts SET ? WHERE id = ?', [data, id],
-                (error, results) => {
-                    if (error)
-                        return res.status(400).json(error)
-
-                    return res.status(200).json({ message: 'Post has been updated' })
-                })
-        }
-    )
+    return res.status(200).json({ message: 'Post has been updated' })
 }
 
 exports.deletePost = (req, res) => {
@@ -223,7 +306,7 @@ exports.deletePost = (req, res) => {
         return res.status(400).json({ message: `Please complete all information` })
 
     db.query(
-        'SELECT * FROM posts WHERE id = ?', [id],
+        'SELECT * FROM post_media WHERE postId = ?', [id],
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
@@ -231,56 +314,18 @@ exports.deletePost = (req, res) => {
             if (results.length === 0)
                 return res.status(400).json({ message: 'Post not found' })
 
-            if (results[0].image) {
+            results.map(item => {
                 const fs = require("fs")
                 try {
-                    fs.unlinkSync(results[0].image.replace(process.env.SERVER, './public'))
+                    fs.unlinkSync(item.mediaUrl.replace(process.env.SERVER, './public'))
                 } catch (error) {
                     console.log(error)
                 }
-            }
-            if (results[0].image2) {
-                const fs = require("fs")
-                try {
-                    fs.unlinkSync(results[0].image2.replace(process.env.SERVER, './public'))
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-            if (results[0].image3) {
-                const fs = require("fs")
-                try {
-                    fs.unlinkSync(results[0].image3.replace(process.env.SERVER, './public'))
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-            if (results[0].image4) {
-                const fs = require("fs")
-                try {
-                    fs.unlinkSync(results[0].image4.replace(process.env.SERVER, './public'))
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-            if (results[0].video) {
-                const fs = require("fs")
-                try {
-                    fs.unlinkSync(results[0].video.replace(process.env.SERVER, './public'))
-                } catch (error) {
-                    console.log(error)
-                }
-            }
+            })
 
-            db.query(
-                'DELETE FROM posts WHERE id = ?', [id],
-                async (error, results) => {
-                    if (error)
-                        return res.status(400).json(error)
-
-                    return res.status(200).json({ message: 'Deleted post successfully' })
-                }
-            )
+            db.query('DELETE FROM post_media WHERE postId = ?', [id])
+            db.query('DELETE FROM posts WHERE id = ?', [id])
+            return res.status(200).json({ message: 'Deleted post successfully' })
         }
     )
 }

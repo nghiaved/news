@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import ReactQuill from 'react-quill'
 import moment from 'moment'
-import { apiPostsAddViewPost, apiPostsGetAllPosts, apiPostsAddDislikePost, apiPostsAddLikePost } from '../services'
+import { apiPostsAddViewPost, apiPostsGetAllPosts, apiPostsAddDislikePost, apiPostsAddLikePost, apiSavesCreateSave } from '../services'
 import Pagination from '../components/Pagination'
 import ModalComment from '../components/Comment'
 import DetailPost from '../components/DetailPost'
@@ -92,6 +92,22 @@ export default function HomePage() {
         selectHashtagRef.current.value = ''
     }
 
+    const handleSavePost = async (id) => {
+        try {
+            const res = await apiSavesCreateSave({
+                postId: id,
+                userId: userInfo.id,
+                type: 'save',
+            })
+            if (res.status === 200) {
+                toast.success(res.data.message)
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error('Some things wrong!')
+        }
+    }
+
     return (
         <main id='main' className='main'>
             <div className='d-flex align-items-center gap-3 mb-4'>
@@ -147,6 +163,9 @@ export default function HomePage() {
                                 <button onClick={() => setPostId(item.id)} className='btn btn-sm btn-outline-primary'
                                     data-bs-toggle="modal" data-bs-target="#commentModal">
                                     Comment {item.totalComment > 0 && `(${item.totalComment})`}
+                                </button>
+                                <button onClick={() => handleSavePost(item.id)} className='btn btn-sm btn-outline-warning ms-2'>
+                                    Save
                                 </button>
                             </div>
                         </div>

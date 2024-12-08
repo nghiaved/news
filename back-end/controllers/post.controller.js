@@ -76,7 +76,7 @@ exports.getHomePosts = (req, res) => {
     if (!page || !limit)
         return res.status(400).json({ message: `Please complete all information` })
 
-    db.query('SELECT count(*) FROM posts',
+    db.query('SELECT count(*) FROM posts WHERE status_post = ?', ['accepted'],
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
@@ -120,7 +120,6 @@ exports.getHomePosts = (req, res) => {
         }
     )
 }
-
 
 exports.getAllMyPosts = (req, res) => {
     const { author, page, limit } = req.query
@@ -189,12 +188,12 @@ exports.getAllPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query(`SELECT  posts.id, posts.author, posts.createAt, posts.status, posts.status_post,
+                db.query(`SELECT posts.id, posts.author, posts.createAt, posts.status, posts.status_post,
                     posts.totalComment, posts.totalView, posts.totalLike, posts.totalDislike,
                     posts.hashtags, post_media.postId, post_media.mediaType, post_media.mediaUrl
-                    FROM posts LEFT JOIN post_media ON posts.id = post_media.postId
-                    WHERE status_post LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
-                    [status_post === 'waiting' ? '' : `%${status_post}%`, +limit, +((page - 1) * limit)],
+                    FROM posts LEFT JOIN post_media ON posts.id = post_media.postId 
+                    WHERE status_post LIKE '%${status_post}%' ORDER BY createAt DESC LIMIT ? OFFSET ?`,
+                    [+limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)

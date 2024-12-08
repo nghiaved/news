@@ -55,7 +55,7 @@ export default function LoginPage() {
                                             <div className="col-12">
                                                 <label htmlFor="yourUsername" className="form-label">Username</label>
                                                 <div className="input-group">
-                                                    <input {...register('username')} required maxLength={30} minLength={6} autoComplete='off'
+                                                    <input {...register('username')} required maxLength={30} minLength={5} autoComplete='off'
                                                         type="text" className="form-control" id="yourUsername" />
                                                     <div className="invalid-feedback">Please enter your username.</div>
                                                 </div>

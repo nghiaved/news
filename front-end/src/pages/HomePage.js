@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import ReactQuill from 'react-quill'
 import moment from 'moment'
-import { apiPostsAddViewPost, apiPostsGetAllPosts, apiPostsAddDislikePost, apiPostsAddLikePost, apiSavesCreateSave } from '../services'
+import { apiPostsAddViewPost, apiPostsAddDislikePost, apiPostsAddLikePost, apiSavesCreateSave, apiPostsGetHomePosts } from '../services'
 import Pagination from '../components/Pagination'
 import ModalComment from '../components/Comment'
 import DetailPost from '../components/DetailPost'
@@ -23,7 +23,7 @@ export default function HomePage() {
 
     const fetchAllPosts = useCallback(async () => {
         try {
-            const res = await apiPostsGetAllPosts({ page: pageNumber, limit: 4, hashtag })
+            const res = await apiPostsGetHomePosts({ page: pageNumber, limit: 4, hashtag })
             setPosts(res.data.posts)
             setNumberOfPages(new Array(res.data.totalPage).fill(null).map((item, index) => ++index))
         } catch (error) {

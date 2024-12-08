@@ -20,3 +20,9 @@ export const apiUsersList = searchValue =>
 
 export const apiUsersGetInfo = username =>
     axiosClient.get(`/api/users/get-info/${username}`)
+
+export const apiUsersGetListUsers = ({ page, limit }) =>
+    axiosClient.get(`/api/users/get-list-users?page=${page}&limit=${limit}`)
+
+export const apiUsersDeleteAccountById = id =>
+    axiosClient.delete(`/api/users/delete-account-by-id?id=${id}`)

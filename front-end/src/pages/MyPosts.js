@@ -47,6 +47,17 @@ export default function MyPosts() {
         }
     }
 
+    const renderStatusPost = (item) => {
+        switch (item.status_post) {
+            case 'accepted':
+                return <span className='text-success'>Accepted</span>
+            case 'refused':
+                return <span className='text-danger'>Refused</span>
+            default:
+                return <span className='text-warning'>Waiting</span>
+        }
+    }
+
     return (
         <main id='main'>
             <div className="pagetitle">
@@ -85,25 +96,30 @@ export default function MyPosts() {
                                 </div>
                             </div>
                             <div className='card-footer text-end'>
-                                <button onClick={() => setDetail(item)} className='btn btn-sm btn-outline-secondary me-3'
-                                    data-bs-toggle="modal" data-bs-target="#detailModal">
-                                    Detail
-                                </button>
-                                <button onClick={() => setEdit(item)} className='btn btn-sm btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
-                                <button className='btn btn-sm btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
-                                <div className="modal fade" id={`deleteModal${item.id}`} tabIndex="-1" aria-labelledby={`deleteModal${item.id}Label`} aria-hidden="true">
-                                    <div className="modal-dialog modal-dialog-centered">
-                                        <div className="modal-content">
-                                            <div className="modal-header">
-                                                <h5 className="modal-title" id={`deleteModal${item.id}Label`}>Delete post</h5>
-                                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div className="modal-body">
-                                                Are you sure you want to delete your post?
-                                            </div>
-                                            <div className="modal-footer">
-                                                <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
+                                <div className='d-flex justify-content-between'>
+                                    <div>Status: {renderStatusPost(item)}</div>
+                                    <div>
+                                        <button onClick={() => setDetail(item)} className='btn btn-sm btn-outline-secondary me-3'
+                                            data-bs-toggle="modal" data-bs-target="#detailModal">
+                                            Detail
+                                        </button>
+                                        <button onClick={() => setEdit(item)} className='btn btn-sm btn-outline-warning me-3' data-bs-toggle="modal" data-bs-target="#updateModal">Edit</button>
+                                        <button className='btn btn-sm btn-outline-danger' data-bs-toggle="modal" data-bs-target={`#deleteModal${item.id}`}>Delete</button>
+                                        <div className="modal fade" id={`deleteModal${item.id}`} tabIndex="-1" aria-labelledby={`deleteModal${item.id}Label`} aria-hidden="true">
+                                            <div className="modal-dialog modal-dialog-centered">
+                                                <div className="modal-content">
+                                                    <div className="modal-header">
+                                                        <h5 className="modal-title" id={`deleteModal${item.id}Label`}>Delete post</h5>
+                                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div className="modal-body">
+                                                        Are you sure you want to delete your post?
+                                                    </div>
+                                                    <div className="modal-footer">
+                                                        <button type="button" className="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button onClick={() => handleDeletePost(item.id)} data-bs-dismiss="modal" type="button" className="btn btn-sm btn-danger">Delete</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

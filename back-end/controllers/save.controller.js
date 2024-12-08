@@ -13,7 +13,7 @@ exports.getAllSaves = (req, res) => {
                 const totalPage = Math.ceil(totalData / limit)
 
                 db.query(`SELECT * FROM posts 
-                        INNER JOIN post_media ON posts.id = post_media.postId 
+                        LEFT JOIN post_media ON posts.id = post_media.postId 
                         INNER JOIN saved_posts ON posts.id = saved_posts.postId 
                         ORDER BY createAt DESC LIMIT ? OFFSET ?`,
                     [+limit, +((page - 1) * limit)],

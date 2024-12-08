@@ -209,3 +209,55 @@ exports.changePassword = (req, res) => {
         }
     )
 }
+
+exports.getListUsers = (req, res) => {
+    const { page, limit } = req.query
+
+    if (!page || !limit)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query('SELECT count(*) FROM users',
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+
+            if (results.length === 0)
+                return res.status(200).json({ totalData: 0, totalPage: 0, page, limit, users: [] })
+
+            const totalData = results[0]['count(*)']
+            const totalPage = Math.ceil(totalData / limit)
+            db.query(
+                "SELECT id, username, firstName, lastName, image FROM users ORDER BY id DESC LIMIT ? OFFSET ?",
+                [+limit, +((page - 1) * limit)],
+                async (error, results) => {
+                    if (error)
+                        return res.status(400).json(error)
+                    return res.status(200).json({ totalData, totalPage, page, limit, users: results })
+                }
+            )
+        })
+}
+
+exports.deleteAccountById = (req, res) => {
+    const { id } = req.query
+
+    if (!id)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query(
+        'SELECT username, password FROM users WHERE id = ?', [id],
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+            db.query(
+                'DELETE FROM users WHERE id = ?', [id],
+                async (error, results) => {
+                    if (error)
+                        return res.status(400).json(error)
+
+                    return res.status(200).json({ message: 'User deleted successfully' })
+                }
+            )
+        }
+    )
+}

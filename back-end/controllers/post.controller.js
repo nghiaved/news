@@ -70,14 +70,13 @@ exports.createPost = (req, res) => {
         return res.status(200).json({ message: 'Post created successfully' })
     })
 }
+exports.getHomePosts = (req, res) => {
+    const { page, limit, hashtag } = req.query
 
-exports.getAllMyPosts = (req, res) => {
-    const { author, page, limit } = req.query
-
-    if (!author || !page || !limit)
+    if (!page || !limit)
         return res.status(400).json({ message: `Please complete all information` })
 
-    db.query('SELECT count(*) FROM posts WHERE author = ?', [author],
+    db.query('SELECT count(*) FROM posts',
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
@@ -86,17 +85,20 @@ exports.getAllMyPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query(`SELECT * FROM posts INNER JOIN post_media ON posts.id = post_media.postId 
-                    WHERE author = ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
-                    [author, +limit, +((page - 1) * limit)],
+                db.query(`SELECT posts.id, posts.author, posts.createAt, posts.status, posts.status_post,
+                    posts.totalComment, posts.totalView, posts.totalLike, posts.totalDislike,
+                    posts.hashtags, post_media.postId, post_media.mediaType, post_media.mediaUrl
+                    FROM posts LEFT JOIN post_media ON posts.id = post_media.postId 
+                    WHERE hashtags LIKE ? AND status_post = ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
+                    [`%${hashtag}%`, 'accepted', +limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)
                         const postsMap = {}
                         results.forEach(row => {
-                            if (!postsMap[row.postId]) {
-                                postsMap[row.postId] = {
-                                    id: row.postId,
+                            if (!postsMap[row.id]) {
+                                postsMap[row.id] = {
+                                    id: row.id,
                                     author: row.author,
                                     createAt: row.createAt,
                                     status: row.status,
@@ -119,8 +121,61 @@ exports.getAllMyPosts = (req, res) => {
     )
 }
 
+
+exports.getAllMyPosts = (req, res) => {
+    const { author, page, limit } = req.query
+
+    if (!author || !page || !limit)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query('SELECT count(*) FROM posts WHERE author = ?', [author],
+        async (error, results) => {
+            if (error)
+                return res.status(400).json(error)
+
+            if (results) {
+                const totalData = results[0]['count(*)']
+                const totalPage = Math.ceil(totalData / limit)
+
+                db.query(`SELECT posts.id, posts.author, posts.createAt, posts.status, posts.status_post,
+                    posts.totalComment, posts.totalView, posts.totalLike, posts.totalDislike,
+                    posts.hashtags, post_media.postId, post_media.mediaType, post_media.mediaUrl
+                    FROM posts LEFT JOIN post_media ON posts.id = post_media.postId 
+                    WHERE author = ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
+                    [author, +limit, +((page - 1) * limit)],
+                    async (error, results) => {
+                        if (error)
+                            return res.status(400).json(error)
+                        const postsMap = {}
+                        results.forEach(row => {
+                            if (!postsMap[row.id]) {
+                                postsMap[row.id] = {
+                                    id: row.id,
+                                    author: row.author,
+                                    createAt: row.createAt,
+                                    status: row.status,
+                                    totalComment: row.totalComment,
+                                    totalView: row.totalView,
+                                    totalLike: row.totalLike,
+                                    totalDislike: row.totalDislike,
+                                    hashtags: row.hashtags,
+                                    status_post: row.status_post,
+                                }
+                            }
+                            if (row.postId) {
+                                postsMap[row.postId][row.mediaType] = row.mediaUrl
+                            }
+                        })
+                        return res.status(200).json({ totalData, totalPage, page, limit, posts: Object.values(postsMap) })
+                    }
+                )
+            }
+        }
+    )
+}
+
 exports.getAllPosts = (req, res) => {
-    const { page, limit, hashtag } = req.query
+    const { page, limit, status_post } = req.query
 
     if (!page || !limit)
         return res.status(400).json({ message: `Please complete all information` })
@@ -134,17 +189,20 @@ exports.getAllPosts = (req, res) => {
                 const totalData = results[0]['count(*)']
                 const totalPage = Math.ceil(totalData / limit)
 
-                db.query(`SELECT * FROM posts INNER JOIN post_media ON posts.id = post_media.postId
-                    WHERE hashtags LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
-                    [`%${hashtag}%`, +limit, +((page - 1) * limit)],
+                db.query(`SELECT  posts.id, posts.author, posts.createAt, posts.status, posts.status_post,
+                    posts.totalComment, posts.totalView, posts.totalLike, posts.totalDislike,
+                    posts.hashtags, post_media.postId, post_media.mediaType, post_media.mediaUrl
+                    FROM posts LEFT JOIN post_media ON posts.id = post_media.postId
+                    WHERE status_post LIKE ? ORDER BY createAt DESC LIMIT ? OFFSET ?`,
+                    [status_post === 'waiting' ? '' : `%${status_post}%`, +limit, +((page - 1) * limit)],
                     async (error, results) => {
                         if (error)
                             return res.status(400).json(error)
                         const postsMap = {}
                         results.forEach(row => {
-                            if (!postsMap[row.postId]) {
-                                postsMap[row.postId] = {
-                                    id: row.postId,
+                            if (!postsMap[row.id]) {
+                                postsMap[row.id] = {
+                                    id: row.id,
                                     author: row.author,
                                     createAt: row.createAt,
                                     status: row.status,
@@ -153,6 +211,7 @@ exports.getAllPosts = (req, res) => {
                                     totalLike: row.totalLike,
                                     totalDislike: row.totalDislike,
                                     hashtags: row.hashtags,
+                                    status_post: row.status_post,
                                 }
                             }
                             if (row.postId) {
@@ -310,10 +369,6 @@ exports.deletePost = (req, res) => {
         async (error, results) => {
             if (error)
                 return res.status(400).json(error)
-
-            if (results.length === 0)
-                return res.status(400).json({ message: 'Post not found' })
-
             results.map(item => {
                 const fs = require("fs")
                 try {
@@ -322,7 +377,6 @@ exports.deletePost = (req, res) => {
                     console.log(error)
                 }
             })
-
             db.query('DELETE FROM post_media WHERE postId = ?', [id])
             db.query('DELETE FROM posts WHERE id = ?', [id])
             return res.status(200).json({ message: 'Deleted post successfully' })
@@ -456,4 +510,15 @@ exports.addDislikePost = (req, res) => {
                 })
         }
     )
+}
+
+exports.updateStatusPost = (req, res) => {
+    const { id, status_post } = req.body
+
+    if (!id)
+        return res.status(400).json({ message: `Please complete all information` })
+
+    db.query('UPDATE posts SET ? WHERE id = ?', [{ status_post }, id])
+
+    return res.status(200).json({ message: 'Status post has been updated' })
 }
